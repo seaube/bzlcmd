@@ -1,0 +1,9 @@
+# bazel
+/bazel-*
+user.bazelrc
+/external
+/compile_commands.json
+
+# editor stuff
+/.helix
+/.cache
