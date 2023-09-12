@@ -3,11 +3,14 @@
 #include <string>
 #include <format>
 #include <iostream>
+#include <format>
+#include <boost/process.hpp>
 #include "nlohmann/json.hpp"
 #include "docopt.h"
 #include "bzlreg/config_types.hh"
 
 namespace fs = std::filesystem;
+namespace bp = boost::process;
 using nlohmann::json;
 
 constexpr auto USAGE = R"docopt(
@@ -56,6 +59,13 @@ auto add_module( //
 			"Invalid archive URL {}\nMust begin with https:// or http://\n",
 			archive_url
 		);
+		return 1;
+	}
+
+	// TODO(zaucy): replace with libcurl or libcpr
+	auto curl = bp::search_path("curl");
+	if(curl.empty()) {
+		std::cerr << "Canont find 'curl' in PATH\n";
 		return 1;
 	}
 

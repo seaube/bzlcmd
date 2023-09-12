@@ -16,5 +16,6 @@ cc_binary(
     deps = [
         ":config_types",
         "@docopt.cpp//:docopt",
+        "@boost.process",
     ],
 )
