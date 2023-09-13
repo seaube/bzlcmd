@@ -75,10 +75,11 @@ auto infer_repository_from_url( //
 	return std::nullopt;
 }
 
-auto bzlreg::add_module( //
-	fs::path         registry_dir,
-	std::string_view archive_url_str
-) -> int {
+auto bzlreg::add_module(add_module_options options) -> int {
+	auto registry_dir = options.registry_dir;
+	auto archive_url_str = options.archive_url;
+	auto strip_prefix = options.strip_prefix;
+
 	if(!fs::exists(registry_dir / "bazel_registry.json")) {
 		std::cerr << std::format(
 			"bazel_registry.json file is missing. Are sure {} is a bazel registry?",
@@ -120,7 +121,11 @@ auto bzlreg::add_module( //
 	auto decompressed_data = bzlreg::decompress_archive(compressed_data);
 
 	auto tar_view = bzlreg::tar_view{decompressed_data};
-	auto module_bzl_view = tar_view.file("MODULE.bazel");
+	auto module_bzl_view = tar_view.file(
+		strip_prefix.empty() //
+			? "MODULE.bazel"
+			: std::string{strip_prefix} + "/MODULE.bazel"
+	);
 	if(!module_bzl_view) {
 		std::cerr << "Failed to find MODULE.bazel in archive\n";
 		return 1;
@@ -135,6 +140,7 @@ auto bzlreg::add_module( //
 
 	auto source_config = bzlreg::source_config{
 		.integrity = integrity,
+		.strip_prefix = std::string{strip_prefix},
 		.patch_strip = 0,
 		.patches = {},
 		.url = std::string{archive_url_str},

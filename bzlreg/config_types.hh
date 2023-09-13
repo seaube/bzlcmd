@@ -39,6 +39,7 @@ struct metadata_config {
 
 struct source_config {
 	std::string                                  integrity;
+	std::string                                  strip_prefix;
 	int                                          patch_strip;
 	std::unordered_map<std::string, std::string> patches;
 	std::string                                  url;
@@ -46,9 +47,10 @@ struct source_config {
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(
 		source_config,
 		integrity,
+		strip_prefix,
 		patch_strip,
 		patches,
 		url
 	)
 };
-} // namespace bazel_registry
+} // namespace bzlreg

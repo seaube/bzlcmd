@@ -4,8 +4,10 @@
 #include <string_view>
 
 namespace bzlreg {
-auto add_module( //
-	std::filesystem::path registry_dir,
-	std::string_view      archive_url
-) -> int;
+struct add_module_options {
+	std::filesystem::path registry_dir;
+	std::string_view archive_url;
+	std::string_view strip_prefix;
+};
+auto add_module(add_module_options options) -> int;
 }
