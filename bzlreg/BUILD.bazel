@@ -10,12 +10,78 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "download",
+    hdrs = ["download.hh"],
+    srcs = ["download.cc"],
+    deps = [
+        "@boost.process",
+        "@boost.asio",
+    ],
+)
+
+cc_library(
+    name = "init_registry",
+    hdrs = ["init_registry.hh"],
+    srcs = ["init_registry.cc"],
+    deps = [
+        ":config_types",
+    ],
+)
+
+cc_library(
+    name = "add_module",
+    hdrs = ["add_module.hh"],
+    srcs = ["add_module.cc"],
+    deps = [
+        ":config_types",
+        ":download",
+        ":tar_view",
+        ":defer",
+        ":decompress",
+        ":module_bazel",
+        "@boost.url",
+        "@boringssl//:crypto",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "defer",
+    hdrs = ["defer.hh"],
+)
+
+cc_library(
+    name = "decompress",
+    hdrs = ["decompress.hh"],
+    srcs = ["decompress.cc"],
+    deps = [
+        ":defer",
+        "@libdeflate",
+    ],
+)
+
+cc_library(
+    name = "tar_view",
+    hdrs = ["tar_view.hh"],
+    srcs = ["tar_view.cc"],
+)
+
+cc_library(
+    name = "module_bazel",
+    hdrs = ["module_bazel.hh"],
+    srcs = ["module_bazel.cc"],
+    deps = [
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
 cc_binary(
     name = "bzlreg",
     srcs = ["bzlreg.cc"],
     deps = [
-        ":config_types",
+        ":init_registry",
+        ":add_module",
         "@docopt.cpp//:docopt",
-        "@boost.process",
     ],
 )
