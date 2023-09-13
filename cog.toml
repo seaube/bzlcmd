@@ -1,0 +1,9 @@
+pre_bump_hooks = [
+	"buildozer 'set version {{version}}' //MODULE.bazel:%module",
+]
+
+post_bump_hooks = [
+	"git push",
+	"git push origin {{version}}",
+	"gh release create {{version}} --generate-notes --latest -t {{version}} --verify-tag",
+]
