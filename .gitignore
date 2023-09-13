@@ -7,3 +7,7 @@ user.bazelrc
 # editor stuff
 /.helix
 /.cache
+
+# other
+/test
+*.tar.gz

@@ -1,17 +1,10 @@
 #include <filesystem>
-#include <fstream>
-#include <string>
-#include <format>
 #include <iostream>
-#include <format>
-#include <boost/process.hpp>
-#include "nlohmann/json.hpp"
 #include "docopt.h"
-#include "bzlreg/config_types.hh"
+#include "bzlreg/init_registry.hh"
+#include "bzlreg/add_module.hh"
 
 namespace fs = std::filesystem;
-namespace bp = boost::process;
-using nlohmann::json;
 
 constexpr auto USAGE = R"docopt(
 Bazel registry CLI utility
@@ -21,60 +14,13 @@ Usage:
 	bzlreg add-module <archive-url> [--registry-dir=<registry-dir>]
 )docopt";
 
-auto init_registry(fs::path registry_dir) -> int {
-	auto bazel_registry_json_path = registry_dir / "bazel_registry.json";
-	auto modules_dir = registry_dir / "modules";
-
-	if(!fs::exists(bazel_registry_json_path)) {
-		auto config = bzlreg::bazel_registry_config{};
-		auto config_json = json{};
-		to_json(config_json, config);
-		std::ofstream{bazel_registry_json_path} << config_json.dump(4);
-	}
-
-	if(!fs::exists(modules_dir)) {
-		fs::create_directory(modules_dir);
-	}
-
-	return 0;
-}
-
-auto init_module( //
-	fs::path    registry_dir,
-	std::string module_name
-) -> int {
-	return 0;
-}
-
-auto is_valid_archive_url(const std::string& url) {
-	return url.starts_with("https://") || url.starts_with("http://");
-}
-
-auto add_module( //
-	fs::path    registry_dir,
-	std::string archive_url
-) -> int {
-	if(!is_valid_archive_url(archive_url)) {
-		std::cerr << std::format( //
-			"Invalid archive URL {}\nMust begin with https:// or http://\n",
-			archive_url
-		);
-		return 1;
-	}
-
-	// TODO(zaucy): replace with libcurl or libcpr
-	auto curl = bp::search_path("curl");
-	if(curl.empty()) {
-		std::cerr << "Canont find 'curl' in PATH\n";
-		return 1;
-	}
-
-	return 0;
-}
-
 auto main(int argc, char* argv[]) -> int {
+	auto bazel_working_dir = std::getenv("BUILD_WORKING_DIRECTORY");
+	if(bazel_working_dir!= nullptr) {
+		fs::current_path(bazel_working_dir);
+	}
+	
 	auto args = docopt::docopt(USAGE, {argv + 1, argv + argc});
-
 	auto exit_code = int{0};
 
 	if(args["init"].asBool()) {
@@ -82,13 +28,13 @@ auto main(int argc, char* argv[]) -> int {
 			? fs::path{args.at("<registry-dir>").asString()}
 			: fs::current_path();
 
-		exit_code = init_registry(registry_dir);
+		exit_code = bzlreg::init_registry(registry_dir);
 	} else if(args["add-module"].asBool()) {
-		auto registry_dir = args["--registry_dir"] //
-			? fs::path{args.at("--registry_dir").asString()}
+		auto registry_dir = args["--registry-dir"] //
+			? fs::path{args.at("--registry-dir").asString()}
 			: fs::current_path();
 		auto archive_url = args.at("<archive-url>").asString();
-		exit_code = add_module(registry_dir, archive_url);
+		exit_code = bzlreg::add_module(registry_dir, archive_url);
 	}
 
 	return exit_code;
