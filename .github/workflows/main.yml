@@ -24,7 +24,7 @@ jobs:
             /Users/runneradmin/.cache/bazel-disk-cache
           key: ${{runner.os}}-bazel-cache
       - uses: actions/checkout@v4
-      - run: curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-windows-amd64.exe -o .\buildozer.exe
+      - run: curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-windows-amd64.exe -o .\buildozer.exe
       - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
       - run: .\test\test.bat
 
