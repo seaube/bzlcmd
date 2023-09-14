@@ -30,7 +30,7 @@ auto main(int argc, char* argv[]) -> int {
 
 		exit_code = bzlmod::init_module(module_dir);
 	} else if(args["add"].asBool()) {
-    auto dep_name = args["<dep-name>"].asString();
+		auto dep_name = args["<dep-name>"].asString();
 		exit_code = bzlmod::add_module(dep_name);
 	}
 

@@ -112,10 +112,7 @@ auto bzlreg::add_module(add_module_options options) -> int {
 
 	auto compressed_data = bzlreg::download_file(archive_url_str);
 	if(!compressed_data) {
-		std::cerr << std::format(
-			"Failed to download {}\n",
-			archive_url_str
-		);
+		std::cerr << std::format("Failed to download {}\n", archive_url_str);
 		return 1;
 	}
 
