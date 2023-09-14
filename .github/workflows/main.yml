@@ -37,3 +37,4 @@ jobs:
           key: ${{runner.os}}-bazel-cache
       - uses: actions/checkout@v4
       - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
+      - run: .\test\test.bat
