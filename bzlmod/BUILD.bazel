@@ -1,0 +1,56 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+cc_library(
+    name = "add_module",
+    hdrs = ["add_module.hh"],
+    srcs = ["add_module.cc"],
+    deps = [
+        ":get_registries",
+        ":find_workspace_dir",
+        ":download_module_metadata",
+        "@boost.process",
+    ],
+)
+cc_library(
+    name = "init_module",
+    hdrs = ["init_module.hh"],
+    srcs = ["init_module.cc"],
+    deps = [
+        "@abseil-cpp//absl/strings",
+    ],
+)
+cc_library(
+    name = "download_module_metadata",
+    hdrs = ["download_module_metadata.hh"],
+    srcs = ["download_module_metadata.cc"],
+    deps = [
+        "//bzlreg:download",
+        "//bzlreg:config_types",
+    ],
+)
+
+cc_library(
+    name = "get_registries",
+    hdrs = ["get_registries.hh"],
+    srcs = ["get_registries.cc"],
+    deps = [
+        "@abseil-cpp//absl/strings",
+    ],
+)
+cc_library(
+    name = "find_workspace_dir",
+    hdrs = ["find_workspace_dir.hh"],
+    srcs = ["find_workspace_dir.cc"],
+    deps = [
+    ],
+)
+
+cc_binary(
+    name = "bzlmod",
+    srcs = ["bzlmod.cc"],
+    deps = [
+        "@docopt.cpp//:docopt",
+        ":add_module",
+        ":init_module",
+    ],
+)

@@ -8,9 +8,9 @@
 namespace bp = boost::process;
 using namespace std::string_literals;
 
-auto bzlreg::download_archive( //
+auto bzlreg::download_file( //
 	std::string_view url
-) -> std::vector<std::byte> {
+) -> std::optional<std::vector<std::byte>> {
 	// TODO(zaucy): replace with libcurl or libcpr
 	auto curl = bp::search_path("curl");
 	if(curl.empty()) {
@@ -22,7 +22,7 @@ auto bzlreg::download_archive( //
 	auto curl_proc = bp::child{
 		ioc,
 		bp::exe(curl),
-		bp::args({"-sL"s, std::string{url}}),
+		bp::args({"-sLf"s, std::string{url}}),
 		bp::std_out > curl_stdout,
 		bp::std_in.close(),
 	};

@@ -1,11 +1,12 @@
 #pragma once
 
 #include <string_view>
+#include <optional>
 #include <vector>
 #include <cstddef>
 
 namespace bzlreg {
-auto download_archive( //
+auto download_file( //
 	std::string_view url
-) -> std::vector<std::byte>;
+) -> std::optional<std::vector<std::byte>>;
 }

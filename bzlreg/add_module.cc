@@ -110,15 +110,22 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		return 1;
 	}
 
-	auto compressed_data = bzlreg::download_archive(archive_url_str);
+	auto compressed_data = bzlreg::download_file(archive_url_str);
+	if(!compressed_data) {
+		std::cerr << std::format(
+			"Failed to download {}\n",
+			archive_url_str
+		);
+		return 1;
+	}
 
-	auto integrity = calc_sha256_integrity(compressed_data);
+	auto integrity = calc_sha256_integrity(*compressed_data);
 	if(integrity.empty()) {
 		std::cerr << "Failed to calculate sha256 integrity\n";
 		return 1;
 	}
 
-	auto decompressed_data = bzlreg::decompress_archive(compressed_data);
+	auto decompressed_data = bzlreg::decompress_archive(*compressed_data);
 
 	auto tar_view = bzlreg::tar_view{decompressed_data};
 	auto module_bzl_view = tar_view.file(
