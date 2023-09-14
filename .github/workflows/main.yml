@@ -24,11 +24,14 @@ jobs:
             /Users/runneradmin/.cache/bazel-disk-cache
           key: ${{runner.os}}-bazel-cache
       - uses: actions/checkout@v4
+      - run: curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-windows-amd64.exe -o .\buildozer.exe
       - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
+      - run: .\test\test.bat
 
   test-linux:
     runs-on: ubuntu-latest
     steps:
+      - run: sudo curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-linux-amd64 -o /usr/bin/buildozer && sudo chmod +x /usr/bin/buildozer
       - uses: actions/cache@v3
         with:
           path: |
@@ -37,3 +40,4 @@ jobs:
           key: ${{runner.os}}-bazel-cache
       - uses: actions/checkout@v4
       - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
+      - run: ./test/test.sh

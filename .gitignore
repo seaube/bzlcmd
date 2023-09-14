@@ -9,5 +9,7 @@ user.bazelrc
 /.cache
 
 # other
-/test
 *.tar.gz
+/test/reg
+/test/module
+*.exe

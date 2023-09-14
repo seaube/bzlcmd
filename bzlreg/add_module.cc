@@ -82,7 +82,7 @@ auto bzlreg::add_module(add_module_options options) -> int {
 
 	if(!fs::exists(registry_dir / "bazel_registry.json")) {
 		std::cerr << std::format(
-			"bazel_registry.json file is missing. Are sure {} is a bazel registry?",
+			"bazel_registry.json file is missing. Are sure {} is a bazel registry?\n",
 			registry_dir.generic_string()
 		);
 		return 1;
@@ -125,6 +125,7 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	auto decompressed_data = bzlreg::decompress_archive(*compressed_data);
 
 	auto tar_view = bzlreg::tar_view{decompressed_data};
+
 	auto module_bzl_view = tar_view.file(
 		strip_prefix.empty() //
 			? "MODULE.bazel"
@@ -182,7 +183,7 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		} else {
 			std::cerr << std::format( //
 				"[WARN] Unable to infer repository string from {}\n"
-				"       Please add to {} manually",
+				"       Please add to {} manually\n",
 				archive_url_str,
 				metadata_config_path.generic_string()
 			);
