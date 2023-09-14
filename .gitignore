@@ -12,3 +12,4 @@ user.bazelrc
 *.tar.gz
 /test/reg
 /test/module
+*.exe
