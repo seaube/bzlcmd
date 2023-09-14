@@ -1,5 +1,7 @@
 # bzlcmd - CLI tools for bazel projects
 
+We use these tools daily, but they may contain bugs. Suggestions or contributions are welcome!
+
 ## bzlmod
 
 Create a simple `MODULE.bazel` file and some other bazel files to get you started.
