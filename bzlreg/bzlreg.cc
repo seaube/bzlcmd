@@ -46,7 +46,7 @@ auto main(int argc, char* argv[]) -> int {
 			std::cerr << USAGE;
 			return 1;
 		}
-		
+
 		auto archive_url = args.at("<archive-url>").asString();
 		exit_code = bzlreg::add_module({
 			.registry_dir = registry_dir,

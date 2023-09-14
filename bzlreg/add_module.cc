@@ -125,7 +125,7 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	auto decompressed_data = bzlreg::decompress_archive(*compressed_data);
 
 	auto tar_view = bzlreg::tar_view{decompressed_data};
-	
+
 	auto module_bzl_view = tar_view.file(
 		strip_prefix.empty() //
 			? "MODULE.bazel"
