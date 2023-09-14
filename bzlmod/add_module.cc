@@ -56,7 +56,9 @@ auto bzlmod::add_module( //
 	}
 
 	std::for_each(
+#ifdef __cpp_lib_parallel_algorithm
 		std::execution::par,
+#endif
 		registry_resolve_entries.begin(),
 		registry_resolve_entries.end(),
 		[&](registry_resolve_entry& entry) {
