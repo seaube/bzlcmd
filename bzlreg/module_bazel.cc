@@ -42,10 +42,12 @@ static auto parse_call( //
 			absl::SkipWhitespace()
 		);
 
-		auto attr_name = absl::StripAsciiWhitespace(attr_line_split[0]);
-		auto attr_value = absl::StripAsciiWhitespace(attr_line_split[1]);
+		if(attr_line_split.size() > 1) {
+			auto attr_name = absl::StripAsciiWhitespace(attr_line_split[0]);
+			auto attr_value = absl::StripAsciiWhitespace(attr_line_split[1]);
 
-		result.attrs[attr_name] = attr_value;
+			result.attrs[attr_name] = attr_value;
+		}
 	}
 
 	result.contents_after = contents.substr(paren_close + 1);

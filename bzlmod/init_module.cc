@@ -24,6 +24,7 @@ common --enable_bzlmod
 auto bzlmod::init_module( //
 	fs::path dir
 ) -> int {
+	auto ec = std::error_code{};
 	auto module_file = dir / "MODULE.bazel";
 	auto workspace_file = dir / "WORKSPACE.bazel";
 	auto workspace_bzlmod_file = dir / "WORKSPACE.bzlmod";
@@ -36,6 +37,8 @@ auto bzlmod::init_module( //
 		);
 		return 1;
 	}
+
+	fs::create_directories(dir, ec);
 
 	{
 		auto module_file_stream = std::ofstream{module_file};
