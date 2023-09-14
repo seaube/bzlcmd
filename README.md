@@ -8,7 +8,7 @@ Create a simple `MODULE.bazel` file and some other bazel files to get you starte
 bzlmod init
 ```
 
-Add a dependency to your bazel module file with ease! Correctly checks third party dependencies configured in your `.bazelrc` files as well.
+Add a dependency to your bazel module file with ease! Correctly checks third party registries configured in your `.bazelrc` files as well.
 
 ```sh
 bzlmod add rules_cc
