@@ -9,7 +9,7 @@ using nlohmann::json;
 auto bzlreg::init_registry( //
 	fs::path registry_dir
 ) -> int {
-	auto ec =std::error_code{};
+	auto ec = std::error_code{};
 	auto bazel_registry_json_path = registry_dir / "bazel_registry.json";
 	auto modules_dir = registry_dir / "modules";
 
