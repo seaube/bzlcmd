@@ -92,22 +92,38 @@ auto bzlmod::add_module( //
 
 	std::cout << "Found version for " << dep_name << ": " << *dep_version << "\n";
 
+	// We don't care if this fails
 	bp::child{
 		bp::exe(buildozer),
 		bp::args({
 			std::format("new bazel_dep {}", dep_name),
 			"//MODULE.bazel:all",
 		}),
-	}.wait();
+		bp::std_out > bp::null,
+		bp::std_err > bp::null,
+	}
+		.wait();
 
-
-	bp::child{
+	auto buildozer_proc = bp::child{
 		bp::exe(buildozer),
 		bp::args({
 			std::format("set version {}", *dep_version),
 			std::format("//MODULE.bazel:{}", dep_name),
 		}),
-	}.wait();
+		bp::std_out > bp::null,
+		bp::std_err > bp::null,
+	};
+
+	buildozer_proc.wait();
+
+	auto buildozer_exit_code = buildozer_proc.exit_code();
+	if(buildozer_exit_code != 0 && buildozer_exit_code != 3) {
+		std::cerr << std::format( //
+			"buildozer exited with {}\n",
+			buildozer_proc.exit_code()
+		);
+		return 1;
+	}
 
 	return 0;
 }
