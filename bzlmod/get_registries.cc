@@ -2,6 +2,7 @@
 
 #include <string>
 #include <fstream>
+#include <iostream>
 #include "absl/strings/str_split.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_replace.h"
@@ -80,14 +81,16 @@ static auto parse_bazelrc( //
 }
 
 static auto parse_bazelrc_recursive(
-	fs::path bazelrc_path,
-	fs::path workspace_dir
-) -> parse_bazelrc_result {
+	fs::path              bazelrc_path,
+	fs::path              workspace_dir,
+	parse_bazelrc_result& out_result
+) -> void {
 	auto result = parse_bazelrc(bazelrc_path);
 
 	auto already_has_import = [&](auto imp) -> bool {
-		for(auto existing_imp : result.imports) {
+		for(auto existing_imp : out_result.imports) {
 			if(imp == existing_imp) {
+				std::cerr << "Already has import " << imp << "\n";
 				return true;
 			}
 		}
@@ -107,20 +110,20 @@ static auto parse_bazelrc_recursive(
 			},
 			&imp_path
 		);
-		auto imp_result = parse_bazelrc_recursive(imp_path, workspace_dir);
-		result.registries.insert(
-			result.registries.end(),
-			imp_result.registries.begin(),
-			imp_result.registries.end()
-		);
-		result.imports.insert(
-			result.imports.end(),
-			imp_result.imports.begin(),
-			imp_result.imports.end()
-		);
+		parse_bazelrc_recursive(imp_path, workspace_dir, out_result);
 	}
 
-	return result;
+	out_result.imports.insert(
+		out_result.imports.end(),
+		result.imports.begin(),
+		result.imports.end()
+	);
+
+	out_result.registries.insert(
+		out_result.registries.end(),
+		result.registries.begin(),
+		result.registries.end()
+	);
 }
 
 static auto get_default_bazelrc_paths( //
@@ -156,21 +159,16 @@ static auto get_default_bazelrc_paths( //
 auto bzlmod::get_registries( //
 	fs::path workspace_dir
 ) -> std::optional<std::vector<std::string>> {
-	auto registries = std::vector<std::string>{};
 	auto default_bazelrc_paths = get_default_bazelrc_paths(workspace_dir);
+	auto result = parse_bazelrc_result{};
 
 	for(auto bazelrc_path : default_bazelrc_paths) {
-		auto result = parse_bazelrc_recursive(bazelrc_path, workspace_dir);
-		registries.insert(
-			registries.end(),
-			result.registries.begin(),
-			result.registries.end()
-		);
+		parse_bazelrc_recursive(bazelrc_path, workspace_dir, result);
 	}
 
-	if(registries.empty()) {
-		registries.push_back(BAZEL_CENTRAL_REGISTRY);
+	if(result.registries.empty()) {
+		result.registries.push_back(BAZEL_CENTRAL_REGISTRY);
 	}
 
-	return registries;
+	return result.registries;
 }
