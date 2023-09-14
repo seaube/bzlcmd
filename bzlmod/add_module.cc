@@ -90,8 +90,6 @@ auto bzlmod::add_module( //
 		return 1;
 	}
 
-	std::cout << "Found version for " << dep_name << ": " << *dep_version << "\n";
-
 	// We don't care if this fails
 	bp::child{
 		bp::exe(buildozer),
@@ -117,7 +115,20 @@ auto bzlmod::add_module( //
 	buildozer_proc.wait();
 
 	auto buildozer_exit_code = buildozer_proc.exit_code();
-	if(buildozer_exit_code != 0 && buildozer_exit_code != 3) {
+
+	if(buildozer_exit_code == 0) {
+		std::cout << std::format( //
+			"{}@{} added\n",
+			dep_name,
+			*dep_version
+		);
+	} else if(buildozer_exit_code == 3) {
+		std::cout << std::format( //
+			"{}@{} already added\n",
+			dep_name,
+			*dep_version
+		);
+	} else {
 		std::cerr << std::format( //
 			"buildozer exited with {}\n",
 			buildozer_proc.exit_code()
