@@ -14,6 +14,7 @@ bazel_dep(name = "libdeflate", version = "1.18")
 bazel_dep(name = "abseil-cpp", version = "20230802.0")
 bazel_dep(name = "boringssl", version = "0.0.0-20230215-5c22014")
 bazel_dep(name = "docopt.cpp")
+
 git_override(
     module_name = "docopt.cpp",
     commit = "e2f9cdba36c3b70883cea848a8e4d72d9b9a3fac",
