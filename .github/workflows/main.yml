@@ -24,7 +24,7 @@ jobs:
             /Users/runneradmin/.cache/bazel-disk-cache
           key: ${{runner.os}}-bazel-cache
       - uses: actions/checkout@v4
-      - run: bazelisk build --bazelrc=.github/ci.bazelrc //...
+      - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
 
   test-linux:
     runs-on: ubuntu-latest
@@ -36,4 +36,4 @@ jobs:
             ~/.cache/bazel-disk-cache
           key: ${{runner.os}}-bazel-cache
       - uses: actions/checkout@v4
-      - run: bazelisk build --bazelrc=.github/ci.bazelrc //...
+      - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
