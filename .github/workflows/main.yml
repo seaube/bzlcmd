@@ -1,15 +1,39 @@
 name: main
 
-on: [push]
+on:
+  push:
+    branches:
+      - "**"
 
 jobs:
-  test:
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-    runs-on: ${{ matrix.os }}
+  formatting-check:
+    name: Formatting Check
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - run: bazelisk build ...
+      - uses: actions/checkout@v4
+      - uses: jidicula/clang-format-action@v4.9.0
+        with: { clang-format-version: "16" }
+
+  test-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/cache@v3
+        with:
+          path: |
+            /Users/runneradmin/AppData/Local/bazelisk
+            /Users/runneradmin/.cache/bazel-disk-cache
+          key: ${{runner.os}}-bazel-cache
+      - uses: actions/checkout@v4
+      - run: bazelisk build --bazelrc=.github/ci.bazelrc //...
+
+  test-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/bazelisk
+            ~/.cache/bazel-disk-cache
+          key: ${{runner.os}}-bazel-cache
+      - uses: actions/checkout@v4
+      - run: bazelisk build --bazelrc=.github/ci.bazelrc //...

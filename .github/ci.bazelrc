@@ -1,0 +1,7 @@
+import %workspace%/.bazelrc
+
+common --announce_rc
+common --verbose_failures
+common --keep_going
+common --disk_cache=~/.cache/bazel-disk-cache
+test --test_output=errors
