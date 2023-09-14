@@ -32,7 +32,7 @@ jobs:
     steps:
       - run: sudo gh release download v6.3.3 -p buildozer-linux-amd64 -O /usr/bin/buildozer -R bazelbuild/buildtools
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/cache@v3
         with:
           path: |
