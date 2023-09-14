@@ -2,6 +2,20 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.0 - 2023-09-14
+#### Bug Fixes
+- actually get registries (#4) - (b373d70) - Ezekiel Warren
+#### Features
+- bzlmod CLI (#3) - (58fdcbb) - Ezekiel Warren
+- new --strip-prefix flag - (b096367) - Ezekiel Warren
+#### Miscellaneous Chores
+- add release github script (#8) - (a5feb1c) - Ezekiel Warren
+- add tests (#7) - (743a9da) - Ezekiel Warren
+- add cache to CI + formatting (#6) - (3b1d509) - Ezekiel Warren
+- rename to bzlcmd + readme update (#5) - (f8eab26) - Ezekiel Warren
+
+- - -
+
 ## 0.1.0 - 2023-09-13
 #### Features
 - add-module command (#2) - (6f38c94) - Ezekiel Warren
