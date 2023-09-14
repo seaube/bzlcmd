@@ -25,6 +25,7 @@ jobs:
           key: ${{runner.os}}-bazel-cache
       - uses: actions/checkout@v4
       - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
+      - run: .\test\test.bat
 
   test-linux:
     runs-on: ubuntu-latest
@@ -37,4 +38,4 @@ jobs:
           key: ${{runner.os}}-bazel-cache
       - uses: actions/checkout@v4
       - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
-      - run: .\test\test.bat
+      - run: .\test\test.sh
