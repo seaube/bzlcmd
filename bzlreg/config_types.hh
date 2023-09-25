@@ -1,9 +1,9 @@
 #pragma once
 
-#include "nlohmann/json.hpp"
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "nlohmann/json.hpp"
 
 namespace bzlreg {
 struct bazel_registry_config {
@@ -15,10 +15,9 @@ struct bazel_registry_config {
 struct metadata_config {
 	struct maintainer_config {
 		std::string email;
-		std::string github;
 		std::string name;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(maintainer_config, email, github, name)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(maintainer_config, email, name)
 	};
 
 	std::string                                  homepage;
