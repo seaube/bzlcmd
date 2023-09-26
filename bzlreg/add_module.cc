@@ -176,10 +176,13 @@ auto bzlreg::add_module(add_module_options options) -> int {
 
 	metadata_config.versions.emplace_back(module_bzl->version);
 
-	if(metadata_config.repository.empty()) {
+	if(!metadata_config.repository) {
+		metadata_config.repository.emplace();
+	}
+	if(metadata_config.repository->empty()) {
 		auto inferred_repository = infer_repository_from_url(archive_url);
 		if(inferred_repository) {
-			metadata_config.repository.emplace_back(*inferred_repository);
+			metadata_config.repository->emplace_back(*inferred_repository);
 		} else {
 			std::cerr << std::format( //
 				"[WARN] Unable to infer repository string from {}\n"
