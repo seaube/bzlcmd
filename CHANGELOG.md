@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.1 - 2023-09-26
+#### Bug Fixes
+- handle optional 'repository' field - (03c4865) - Ezekiel Warren
+- remove unused field - (a253a26) - Ezekiel Warren
+#### Miscellaneous Chores
+- **(deps)** update com_grail_bazel_toolchain digest to 2c25456 (#10) - (ea6ad20) - renovate[bot]
+- **(deps)** update jidicula/clang-format-action action to v4.11.0 (#11) - (00eb00d) - renovate[bot]
+- add disclaimer to README - (ee4f8a1) - Ezekiel Warren
+- fix typo in README - (4ac35fe) - Ezekiel Warren
+- add license - (e79593e) - Ezekiel Warren
+
+- - -
+
 ## 0.2.0 - 2023-09-14
 #### Bug Fixes
 - actually get registries (#4) - (b373d70) - Ezekiel Warren
