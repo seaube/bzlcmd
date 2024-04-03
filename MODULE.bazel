@@ -1,6 +1,6 @@
 module(
     name = "bzlcmd",
-    version = "0.2.1",
+    version = "0.2.2",
     compatibility_level = 1,
 )
 
@@ -29,7 +29,10 @@ llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
 llvm.toolchain(llvm_version = "16.0.4")
 use_repo(llvm, "llvm_toolchain")
 
-register_toolchains("@llvm_toolchain//:all", dev_dependency = True)
+register_toolchains(
+    "@llvm_toolchain//:all",
+    dev_dependency = True,
+)
 
 git_override(
     module_name = "docopt.cpp",

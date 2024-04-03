@@ -2,6 +2,26 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.2 - 2024-04-03
+#### Miscellaneous Chores
+- **(deps)** update dependency rules_cc to v0.0.9 (#28) - (746d302) - renovate[bot]
+- **(deps)** update dependency boringssl to v0.0.0-20240126-22d349c (#24) - (3e150ec) - renovate[bot]
+- **(deps)** update actions/cache action to v4 (#22) - (e623961) - renovate[bot]
+- **(deps)** update dependency libdeflate to v1.19 (#17) - (10659b4) - renovate[bot]
+- **(deps)** update dependency nlohmann_json to v3.11.3 (#21) - (69411b7) - renovate[bot]
+- **(deps)** update dependency bazel_skylib to v1.5.0 (#18) - (1424775) - renovate[bot]
+- **(deps)** update dependency boost.asio to v1.83.0.bzl.3 (#20) - (4cee416) - renovate[bot]
+- **(deps)** update dependency abseil-cpp to v20230802.1 (#19) - (a5d1d67) - renovate[bot]
+- **(deps)** update dependency bazel to v7.1.1 (#26) - (b671123) - renovate[bot]
+- **(deps)** update dependency toolchains_llvm to v1 (#25) - (4cfe7e8) - renovate[bot]
+- enable renovate automerge - (be4c70d) - Ezekiel Warren
+- enable github merge queue - (cb69b9e) - Ezekiel Warren
+- update test with problem archive (#27) - (199945b) - Ezekiel Warren
+- add simple install script for windows - (6d27ee4) - Ezekiel Warren
+- bzlmod + bazel updates - (3fe6a80) - Ezekiel Warren
+
+- - -
+
 ## 0.2.1 - 2023-09-26
 #### Bug Fixes
 - handle optional 'repository' field - (03c4865) - Ezekiel Warren
