@@ -12,7 +12,7 @@ bazel_dep(name = "boost.asio", version = "1.83.0.bzl.3")
 bazel_dep(name = "boost.url", version = "1.83.0.bzl.2")
 bazel_dep(name = "libdeflate", version = "1.19")
 bazel_dep(name = "abseil-cpp", version = "20230802.1")
-bazel_dep(name = "boringssl", version = "0.0.0-20230215-5c22014")
+bazel_dep(name = "boringssl", version = "0.0.0-20240126-22d349c")
 
 bazel_dep(name = "toolchains_llvm", version = "1.0.0", dev_dependency = True)
 bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
