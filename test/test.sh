@@ -21,7 +21,7 @@ echo adding rules_cc to test registry
 $BZLREG add-module https://github.com/bazelbuild/rules_cc/releases/download/0.0.8/rules_cc-0.0.8.tar.gz --strip-prefix=rules_cc-0.0.8 --registry=$TEST_REG_DIR
 
 echo adding known problem-some archive
-$BZLREG add-module https://github.com/ecsact-dev/ecsact_lang_cpp/releases/download/0.3.4/ecsact_lang_cpp-0.3.4.tar.gz
+$BZLREG add-module https://github.com/ecsact-dev/ecsact_lang_cpp/releases/download/0.3.4/ecsact_lang_cpp-0.3.4.tar.gz --registry=$TEST_REG_DIR
 
 echo initializing test module
 $BZLMOD init $TEST_MODULE_DIR
