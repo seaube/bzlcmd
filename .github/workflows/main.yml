@@ -1,9 +1,8 @@
 name: main
 
 on:
-  push:
-    branches:
-      - "**"
+  pull_request:
+  merge_group:
 
 jobs:
   formatting-check:
