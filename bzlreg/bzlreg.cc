@@ -3,6 +3,11 @@
 #include "docopt.h"
 #include "bzlreg/init_registry.hh"
 #include "bzlreg/add_module.hh"
+#include "ftxui/component/captured_mouse.hpp"
+#include "ftxui/component/component.hpp"
+#include "ftxui/component/loop.hpp"
+#include "ftxui/component/screen_interactive.hpp"
+#include "ftxui/dom/elements.hpp"
 
 namespace fs = std::filesystem;
 
@@ -11,11 +16,11 @@ Bazel registry CLI utility
 
 Usage:
 	bzlreg init [<registry-dir>]
-	bzlreg add-module <archive-url> [--strip-prefix=<str>] [--registry=<path>]
+	bzlreg add-module [<archive-url>...] [--registry=<path>]
 
 Options:
-	--registry=<path>     Registry directory. Defaults to current working directory.
-	--strip-prefix=<str>  Prefix stripped from archive and set in source.json.
+	--registry=<path>         Registry directory. Defaults to current working directory.
+	-s, --strip-prefix=<str>  Prefix stripped from archive and set in source.json.
 )docopt";
 
 auto main(int argc, char* argv[]) -> int {
@@ -34,9 +39,54 @@ auto main(int argc, char* argv[]) -> int {
 
 		exit_code = bzlreg::init_registry(registry_dir);
 	} else if(args["add-module"].asBool()) {
-		auto strip_prefix = args["--strip-prefix"] //
-			? args.at("--strip-prefix").asString()
-			: "";
+		auto cancelled = false;
+		auto archive_urls = args["<archive-url>"].asStringList();
+		auto main_archive_url = std::string{};
+		auto main_archive_url_index = 0;
+
+		if(archive_urls.size() > 1) {
+			auto screen = ftxui::ScreenInteractive::TerminalOutput();
+			auto radiobox = ftxui::Radiobox(ftxui::RadioboxOption{
+				.entries = &archive_urls,
+				.selected = &main_archive_url_index,
+			});
+			auto confirm_btn = ftxui::Button(
+				"Confirm",
+				[&] { screen.Exit(); },
+				ftxui::ButtonOption::Ascii()
+			);
+			auto cancel_btn = ftxui::Button(
+				"Cancel",
+				[&] {
+					screen.Exit();
+					cancelled = true;
+				},
+				ftxui::ButtonOption::Ascii()
+			);
+			auto container = ftxui::Container::Vertical({
+				radiobox,
+				ftxui::Container::Horizontal({confirm_btn, cancel_btn}),
+			});
+
+			auto renderer = ftxui::Renderer(container, [&]() -> ftxui::Element {
+				return ftxui::vbox({
+								 ftxui::hbox(ftxui::text("Pick Main Archive")),
+								 ftxui::separator(),
+								 container->Render(),
+							 }) |
+					ftxui::border;
+			});
+
+			screen.Loop(renderer);
+		}
+
+		if(cancelled) {
+			return 1;
+		}
+
+		main_archive_url = archive_urls[main_archive_url_index];
+		archive_urls.erase(archive_urls.begin() + main_archive_url_index);
+
 		auto registry_dir = args["--registry"] //
 			? fs::path{args.at("--registry").asString()}
 			: fs::current_path();
@@ -50,8 +100,8 @@ auto main(int argc, char* argv[]) -> int {
 		auto archive_url = args.at("<archive-url>").asString();
 		exit_code = bzlreg::add_module({
 			.registry_dir = registry_dir,
-			.archive_url = archive_url,
-			.strip_prefix = strip_prefix,
+			.main_archive_url = archive_urls[main_archive_url_index],
+			.supplement_archive_urls = archive_urls,
 		});
 	}
 
