@@ -82,8 +82,15 @@ auto bzlreg::module_bazel::parse( //
 
 	auto mod = module_bazel{};
 	mod.name = attr_as_string(result.attrs.at("name"));
-	mod.version = attr_as_string(result.attrs.at("version"));
-	mod.compatibility_level = attr_as_int(result.attrs.at("compatibility_level"));
+	if(result.attrs.contains("version")) {
+		mod.version = attr_as_string(result.attrs.at("version"));
+	}
+	if(result.attrs.contains("compatibility_level")) {
+		mod.compatibility_level =
+			attr_as_int(result.attrs.at("compatibility_level"));
+	} else {
+		mod.compatibility_level = 1;
+	}
 
 	while(!absl::StripAsciiWhitespace(result.contents_after).empty()) {
 		result = parse_call(result.contents_after);
