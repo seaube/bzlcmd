@@ -43,6 +43,7 @@ cc_library(
         "@boost.url",
         "@boringssl//:crypto",
         "@abseil-cpp//absl/strings",
+        "@ftxui",
     ],
 )
 

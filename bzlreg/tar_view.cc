@@ -32,6 +32,32 @@ static size_t round_up_to_multiple( //
 	return (num + multiple - 1) & -multiple;
 }
 
+auto bzlreg::tar_view::begin() -> iterator {
+	auto itr = iterator{};
+	itr._data = _tar_bytes.data();
+	return itr;
+}
+
+auto bzlreg::tar_view::end() const noexcept -> sentinel {
+	return {};
+}
+
+auto bzlreg::tar_view::iterator::operator!=(sentinel) const -> bool {
+	return _data != nullptr;
+}
+
+auto bzlreg::tar_view::iterator::operator++() -> iterator {
+	assert(_data != nullptr);
+	auto itr = iterator{};
+	auto file_size = operator*().size();
+	itr._data = _data + TAR_HEADER_SIZE + round_up_to_multiple(file_size, 512);
+	return itr;
+}
+
+auto bzlreg::tar_view::iterator::operator*() const -> tar_view_file {
+	return tar_view_file{_data};
+}
+
 auto bzlreg::tar_view::file( //
 	std::string_view find_filename
 ) -> tar_view_file {
@@ -56,6 +82,9 @@ bzlreg::tar_view_file::tar_view_file( //
 	std::byte* data
 ) noexcept
 	: _data(data) {
+}
+
+bzlreg::tar_view_file::tar_view_file() : _data(nullptr) {
 }
 
 bzlreg::tar_view_file::operator bool() const noexcept {

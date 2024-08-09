@@ -5,6 +5,7 @@
 #include <iostream>
 #include <format>
 #include <fstream>
+#include <memory>
 #include <boost/url.hpp>
 #include <openssl/evp.h>
 #include "nlohmann/json.hpp"
@@ -19,6 +20,7 @@
 namespace fs = std::filesystem;
 using bzlreg::util::defer;
 using json = nlohmann::json;
+using namespace std::string_view_literals;
 
 static auto is_valid_archive_url(std::string_view url) -> bool {
 	return url.starts_with("https://") || url.starts_with("http://");
@@ -75,10 +77,33 @@ auto infer_repository_from_url( //
 	return std::nullopt;
 }
 
+[[nodiscard]] static auto validate_archive_url( //
+	std::string_view archive_url_str
+) -> boost::url {
+	if(!is_valid_archive_url(archive_url_str)) {
+		std::cerr << std::format( //
+			"Invalid archive URL {}\nMust begin with https:// or http://\n",
+			archive_url_str
+		);
+		std::exit(1);
+	}
+
+	auto archive_url = boost::urls::url{archive_url_str};
+	auto archive_filename = fs::path{archive_url.path()}.filename().string();
+	if(!archive_filename.ends_with(".tar.gz") && !archive_filename.ends_with(".tgz")) {
+		std::cerr << std::format(
+			"Archive {} is not supported. Only .tar.gz archives are allowed.\n",
+			archive_filename
+		);
+		std::exit(1);
+	}
+
+	return archive_url;
+}
+
 auto bzlreg::add_module(add_module_options options) -> int {
 	auto registry_dir = options.registry_dir;
-	auto archive_url_str = options.archive_url;
-	auto strip_prefix = options.strip_prefix;
+	auto main_archive_url_str = options.main_archive_url;
 
 	if(!fs::exists(registry_dir / "bazel_registry.json")) {
 		std::cerr << std::format(
@@ -92,39 +117,70 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	auto modules_dir = registry_dir / "modules";
 	fs::create_directories(modules_dir, ec);
 
-	if(!is_valid_archive_url(archive_url_str)) {
-		std::cerr << std::format( //
-			"Invalid archive URL {}\nMust begin with https:// or http://\n",
-			archive_url_str
+	auto main_archive_url = validate_archive_url(main_archive_url_str);
+	auto supplement_archive_urls = std::vector<boost::url>{};
+	supplement_archive_urls.reserve(options.supplement_archive_urls.size());
+	for(auto archive_url_str : options.supplement_archive_urls) {
+		supplement_archive_urls.emplace_back(validate_archive_url(archive_url_str));
+	}
+
+	struct archive_info {
+		std::shared_ptr<std::vector<std::byte>> archive_bytes;
+
+		bzlreg::tar_view tar_view;
+		std::string      common_prefix;
+		std::string      integrity;
+	};
+
+	auto archives = std::vector<archive_info>{};
+	archives.reserve(supplement_archive_urls.size() + 1);
+
+	auto download_and_add = [&archives](std::string_view archive_url) {
+		auto compressed_data = bzlreg::download_file(archive_url);
+		if(!compressed_data) {
+			std::cerr << std::format("Failed to download {}\n", archive_url);
+			std::exit(1);
+		}
+
+		auto integrity = calc_sha256_integrity(*compressed_data);
+		if(integrity.empty()) {
+			std::cerr << "Failed to calculate sha256 integrity\n";
+			std::exit(1);
+		}
+
+		auto prefix = std::string{}; // TODO: find prefix
+		auto archive_bytes = std::make_shared<std::vector<std::byte>>(
+			bzlreg::decompress_archive(*compressed_data)
 		);
-		return 1;
-	}
 
-	auto archive_url = boost::urls::url{archive_url_str};
-	auto archive_filename = fs::path{archive_url.path()}.filename().string();
-	if(!archive_filename.ends_with(".tar.gz") && !archive_filename.ends_with(".tgz")) {
-		std::cerr << std::format(
-			"Archive {} is not supported. Only .tar.gz archives are allowed.\n",
-			archive_filename
+		archives.emplace_back(
+			archive_bytes,
+			bzlreg::tar_view(*archive_bytes),
+			prefix,
+			integrity
 		);
-		return 1;
+	};
+
+	download_and_add(main_archive_url_str);
+	for(auto archive_url : supplement_archive_urls) {
+		download_and_add(archive_url.c_str());
 	}
 
-	auto compressed_data = bzlreg::download_file(archive_url_str);
-	if(!compressed_data) {
-		std::cerr << std::format("Failed to download {}\n", archive_url_str);
-		return 1;
+	auto source_config = bzlreg::source_config{
+		.integrity = archives[0].integrity,
+		.strip_prefix = archives[0].common_prefix,
+		.patch_strip = 0,
+		.patches = {},
+		.url = std::string{main_archive_url_str},
+	};
+
+	auto module_bzl = bzlreg::module_bazel{};
+	auto module_bzl_view = bzlreg::tar_view_file{};
+
+	for(auto& archive : std::ranges::reverse_view{archives}) {
+		module_bzl_view =
+			archive.tar_view.file(archive.common_prefix + "MODULE.bazel");
 	}
-
-	auto integrity = calc_sha256_integrity(*compressed_data);
-	if(integrity.empty()) {
-		std::cerr << "Failed to calculate sha256 integrity\n";
-		return 1;
-	}
-
-	auto decompressed_data = bzlreg::decompress_archive(*compressed_data);
-
-	auto tar_view = bzlreg::tar_view{decompressed_data};
 
 	auto module_bzl_view = tar_view.file(
 		strip_prefix.empty() //
@@ -137,19 +193,6 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	}
 
 	auto module_bzl = bzlreg::module_bazel::parse(module_bzl_view.string_view());
-
-	if(!module_bzl) {
-		std::cerr << "Failed to parse MODULE.bazel\n";
-		return 1;
-	}
-
-	auto source_config = bzlreg::source_config{
-		.integrity = integrity,
-		.strip_prefix = std::string{strip_prefix},
-		.patch_strip = 0,
-		.patches = {},
-		.url = std::string{archive_url_str},
-	};
 
 	auto module_dir = modules_dir / module_bzl->name;
 	auto source_config_path = module_dir / module_bzl->version / "source.json";
@@ -180,7 +223,7 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		metadata_config.repository.emplace();
 	}
 	if(metadata_config.repository->empty()) {
-		auto inferred_repository = infer_repository_from_url(archive_url);
+		auto inferred_repository = infer_repository_from_url(main_archive_url);
 		if(inferred_repository) {
 			metadata_config.repository->emplace_back(*inferred_repository);
 		} else {

@@ -19,6 +19,13 @@ bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
 
 bazel_dep(name = "docopt.cpp")
 
+bazel_dep(name = "ftxui")
+git_override(
+    module_name = "ftxui",
+    commit = "c1c5ac9d83e61a95a1d5df7f6ceaecd8194b1ff8",
+    remote = "https://github.com/zaucy/ftxui.git",
+)
+
 git_override(
     module_name = "hedron_compile_commands",
     commit = "204aa593e002cbd177d30f11f54cff3559110bb9",
