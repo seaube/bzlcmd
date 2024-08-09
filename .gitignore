@@ -3,6 +3,7 @@
 user.bazelrc
 /external
 /compile_commands.json
+*.bazel.lock
 
 # editor stuff
 /.helix
