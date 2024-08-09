@@ -124,6 +124,10 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	}
 
 	auto decompressed_data = bzlreg::decompress_archive(*compressed_data);
+	if(decompressed_data.empty()) {
+		std::cerr << "Failed to decompress archive data\n";
+		return 1;
+	}
 
 	auto tar_view = bzlreg::tar_view{decompressed_data};
 
