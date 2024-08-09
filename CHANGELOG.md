@@ -2,6 +2,32 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.3 - 2024-08-09
+#### Bug Fixes
+- compatibility_level is optional (#45) - (d8f1730) - Ezekiel Warren
+#### Features
+- better error message with bad data (#44) - (9ab0f0f) - Ezekiel Warren
+#### Miscellaneous Chores
+- **(deps)** update dependency abseil-cpp to v20240722 (#42) - (e9e826b) - renovate[bot]
+- **(deps)** update dependency bazel to v7.2.1 (#40) - (080cb6d) - renovate[bot]
+- **(deps)** update dependency abseil-cpp to v20240116 (#23) - (c5c0d9a) - renovate[bot]
+- **(deps)** update dependency toolchains_llvm to v1.1.2 (#41) - (9c47b5d) - renovate[bot]
+- **(deps)** update dependency bazel to v7.2.0 (#39) - (5f24c10) - renovate[bot]
+- **(deps)** update dependency boost.asio to v1.83.0.bzl.4 (#38) - (7ab2f28) - renovate[bot]
+- **(deps)** update dependency bazel_skylib to v1.7.1 (#37) - (b55affd) - renovate[bot]
+- **(deps)** update dependency bazel_skylib to v1.7.0 (#36) - (3baafc6) - renovate[bot]
+- **(deps)** update jidicula/clang-format-action action to v4.13.0 (#35) - (32aec59) - renovate[bot]
+- **(deps)** update jidicula/clang-format-action action to v4.12.0 (#34) - (d416806) - renovate[bot]
+- **(deps)** update dependency bazel to v7.1.2 (#33) - (2935ef1) - renovate[bot]
+- **(deps)** update dependency boringssl to v0.0.0-20240530-2db0eb3 (#32) - (7c5ebac) - renovate[bot]
+- **(deps)** update dependency bazel_skylib to v1.6.1 (#31) - (84d3c10) - renovate[bot]
+- **(deps)** update dependency bazel_skylib to v1.6.0 (#30) - (d3fbd80) - renovate[bot]
+- formatting - (d0aacad) - Ezekiel Warren
+- update clang format version - (6715fd6) - Ezekiel Warren
+- ignore bazel lock files - (7e16a44) - Ezekiel Warren
+
+- - -
+
 ## 0.2.2 - 2024-04-03
 #### Miscellaneous Chores
 - **(deps)** update dependency rules_cc to v0.0.9 (#28) - (746d302) - renovate[bot]
