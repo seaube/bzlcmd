@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jidicula/clang-format-action@v4.13.0
-        with: { clang-format-version: "16" }
+        with: { clang-format-version: "18" }
 
   test-windows:
     runs-on: windows-latest
