@@ -18,7 +18,7 @@ struct metadata_config {
 		std::string email;
 		std::string name;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(maintainer_config, email, name)
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT(maintainer_config, email, name)
 	};
 
 	std::string                                  homepage;

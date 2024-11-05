@@ -45,12 +45,25 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "update_module",
+    hdrs = ["update_module.hh"],
+    srcs = ["update_module.cc"],
+    deps = [
+        ":get_registries",
+        ":find_workspace_dir",
+        ":download_module_metadata",
+        "@boost.process",
+    ],
+)
+
 cc_binary(
     name = "bzlmod",
     srcs = ["bzlmod.cc"],
     deps = [
         "@docopt.cpp//:docopt",
         ":add_module",
+        ":update_module",
         ":init_module",
     ],
 )

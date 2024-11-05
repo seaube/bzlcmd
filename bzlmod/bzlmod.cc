@@ -1,8 +1,8 @@
 #include <filesystem>
-#include <iostream>
 #include "docopt.h"
 #include "bzlmod/init_module.hh"
 #include "bzlmod/add_module.hh"
+#include "bzlmod/update_module.hh"
 
 namespace fs = std::filesystem;
 
@@ -12,6 +12,7 @@ Bzlmod - manage your bazel module with _ease_
 Usage:
 	bzlmod init [<module-dir>]
 	bzlmod add <dep-name>
+	bzlmod update
 )docopt";
 
 auto main(int argc, char* argv[]) -> int {
@@ -32,6 +33,8 @@ auto main(int argc, char* argv[]) -> int {
 	} else if(args["add"].asBool()) {
 		auto dep_name = args["<dep-name>"].asString();
 		exit_code = bzlmod::add_module(dep_name);
+	} else if(args["update"].asBool()) {
+		exit_code = bzlmod::update_module();
 	}
 
 	return exit_code;

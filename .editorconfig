@@ -1,0 +1,14 @@
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+[*.{cc,hh,cpp,hpp}]
+# matching .clang-format IndentWidth
+indent_size = 2
+
+[*.{bzl,bazel}]
+# matches output of buildifier
+indent_size = 4
+indent_style = space
