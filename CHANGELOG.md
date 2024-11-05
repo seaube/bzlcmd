@@ -2,6 +2,27 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.4 - 2024-11-05
+#### Features
+- new update subcommand - (2a2bd94) - Ezekiel Warren
+#### Miscellaneous Chores
+- **(deps)** update dependency boringssl to v0.20241024.0 (#58) - (483e86f) - renovate[bot]
+- **(deps)** update dependency bazel to v7.4.0 (#57) - (4c516b5) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.0.13 (#56) - (86f3b6d) - renovate[bot]
+- **(deps)** update dependency nlohmann_json to v3.11.3.bcr.1 (#55) - (e7ea383) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.0.12 (#54) - (9781186) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.0.11 (#53) - (25a8289) - renovate[bot]
+- **(deps)** update dependency boringssl to v0.20240930.0 (#52) - (72f7985) - renovate[bot]
+- **(deps)** update dependency bazel to v7.3.2 (#51) - (b1ae474) - renovate[bot]
+- **(deps)** update dependency toolchains_llvm to v1.2.0 (#50) - (953ea03) - renovate[bot]
+- **(deps)** update dependency boringssl to v0.20240913.0 (#49) - (d357a7b) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.0.10 (#48) - (124a0f7) - renovate[bot]
+- **(deps)** update dependency bazel to v7.3.1 (#47) - (b8c7e34) - renovate[bot]
+- **(deps)** update dependency bazel to v7.3.0 (#46) - (382b404) - renovate[bot]
+- update lock - (85ac9f5) - Ezekiel Warren
+
+- - -
+
 ## 0.2.3 - 2024-08-09
 #### Bug Fixes
 - compatibility_level is optional (#45) - (d8f1730) - Ezekiel Warren
