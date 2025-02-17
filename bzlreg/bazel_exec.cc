@@ -13,6 +13,7 @@
 namespace bp = boost::process;
 namespace fs = std::filesystem;
 using json = nlohmann::json;
+using namespace std::string_literals;
 
 static auto get_module_from_label(std::string_view label) -> std::string_view {
 	label = label.substr(1, std::string::npos); // strip '@'
@@ -110,7 +111,7 @@ auto bzlreg::bazel_exec(const bazel_exec_options& options) -> int {
 
 	bazel_proc.wait();
 
-	auto exit_code = bazel_proc.exit_code();
+	exit_code = bazel_proc.exit_code();
 
 	bp::spawn(
 		bp::exe(bazel_exe),

@@ -1,5 +1,6 @@
 #include "bzlmod/download_module_metadata.hh"
 
+#include <span>
 #include "nlohmann/json.hpp"
 #include "bzlreg/download.hh"
 
@@ -13,6 +14,7 @@ auto bzlmod::download_module_metadata( //
 		return std::nullopt;
 	}
 
-	bzlreg::metadata_config metadata = json::parse(*data);
+	bzlreg::metadata_config metadata =
+		json::parse(std::span{reinterpret_cast<char*>(data->data()), data->size()});
 	return metadata;
 }
