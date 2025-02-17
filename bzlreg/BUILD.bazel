@@ -62,6 +62,7 @@ cc_library(
         ":config_types",
         ":defer",
         ":unused",
+        "//bzlmod:download_module_metadata",
         "@abseil-cpp//absl/strings",
         "@boost.asio",
         "@boost.process",

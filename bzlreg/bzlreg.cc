@@ -29,8 +29,8 @@ static auto forward_bazel_subcommand(
 	std::string_view       subcommand
 ) -> int {
 	auto registry_dir = options.at("--registry") //
-		? fs::path{options.at("--registry").asString()}
-		: fs::current_path();
+		? std::optional<fs::path>{options.at("--registry").asString()}
+		: std::nullopt;
 	auto label = options.at("<label>").asString();
 	return bzlreg::bazel_exec({
 		.registry_dir = registry_dir,
