@@ -2,6 +2,35 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.5 - 2025-02-17
+#### Bug Fixes
+- crash with EVP_MD_CTX_free - (75a07b9) - Ezekiel Warren
+- add missing pragma once - (33305d7) - zaucy
+#### Features
+- allow running bazel cmd with BCR when not supplying --registry option - (2b54126) - Ezekiel Warren
+- shutdown after doing bzlreg bazel commands - (61cd0a9) - Ezekiel Warren
+- new bzlreg subcommand for running modules from registry - (345551d) - Ezekiel Warren
+#### Miscellaneous Chores
+- **(deps)** update dependency boringssl to v0.20250212.0 (#73) - (5570316) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.1.1 (#72) - (aeadbfb) - renovate[bot]
+- **(deps)** update dependency abseil-cpp to v20250127 (#71) - (76e0b53) - renovate[bot]
+- **(deps)** update dependency bazel to v7.5.0 (#70) - (a1d7990) - renovate[bot]
+- **(deps)** update dependency abseil-cpp to v20240722.1 (#69) - (488e708) - renovate[bot]
+- **(deps)** update dependency toolchains_llvm to v1.3.0 (#68) - (c310aac) - renovate[bot]
+- **(deps)** update dependency boringssl to v0.20250114.0 (#67) - (1be0961) - renovate[bot]
+- **(deps)** update dependency boringssl to v0.20241209.0 (#65) - (64a7cd3) - renovate[bot]
+- **(deps)** update dependency abseil-cpp to v20240722.0.bcr.2 (#64) - (01af17f) - renovate[bot]
+- **(deps)** update jidicula/clang-format-action action to v4.14.0 (#63) - (d6c3a7e) - renovate[bot]
+- **(deps)** update dependency abseil-cpp to v20240722.0.bcr.1 (#62) - (9aac326) - renovate[bot]
+- **(deps)** update dependency bazel to v7.4.1 (#61) - (02b62bd) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.1.0 (#60) - (faa5967) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.0.14 (#59) - (db0411f) - renovate[bot]
+- fix some compile errors on linux - (65af576) - zaucy
+- llvm update - (9d7a97e) - zaucy
+- remove bazel lock from source control - (f4d8eed) - zaucy
+
+- - -
+
 ## 0.2.4 - 2024-11-05
 #### Features
 - new update subcommand - (2a2bd94) - Ezekiel Warren
