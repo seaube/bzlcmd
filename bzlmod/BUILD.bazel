@@ -1,58 +1,70 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("//bazel:copts.bzl", "copts")
+
+package(default_visibility = ["//:__subpackages__"])
 
 cc_library(
     name = "add_module",
-    hdrs = ["add_module.hh"],
     srcs = ["add_module.cc"],
+    hdrs = ["add_module.hh"],
+    copts = copts,
     deps = [
-        ":get_registries",
-        ":find_workspace_dir",
         ":download_module_metadata",
+        ":find_workspace_dir",
+        ":get_registries",
         "@boost.process",
     ],
 )
+
 cc_library(
     name = "init_module",
-    hdrs = ["init_module.hh"],
     srcs = ["init_module.cc"],
+    hdrs = ["init_module.hh"],
+    copts = copts,
     deps = [
         "@abseil-cpp//absl/strings",
     ],
 )
+
 cc_library(
     name = "download_module_metadata",
-    hdrs = ["download_module_metadata.hh"],
     srcs = ["download_module_metadata.cc"],
+    hdrs = ["download_module_metadata.hh"],
+    copts = copts,
     deps = [
-        "//bzlreg:download",
         "//bzlreg:config_types",
+        "//bzlreg:download",
     ],
 )
 
 cc_library(
     name = "get_registries",
-    hdrs = ["get_registries.hh"],
     srcs = ["get_registries.cc"],
+    hdrs = ["get_registries.hh"],
+    copts = copts,
     deps = [
         "@abseil-cpp//absl/strings",
     ],
 )
+
 cc_library(
     name = "find_workspace_dir",
-    hdrs = ["find_workspace_dir.hh"],
     srcs = ["find_workspace_dir.cc"],
+    hdrs = ["find_workspace_dir.hh"],
+    copts = copts,
     deps = [
     ],
 )
 
 cc_library(
     name = "update_module",
-    hdrs = ["update_module.hh"],
     srcs = ["update_module.cc"],
+    hdrs = ["update_module.hh"],
+    copts = copts,
     deps = [
-        ":get_registries",
-        ":find_workspace_dir",
         ":download_module_metadata",
+        ":find_workspace_dir",
+        ":get_registries",
         "@boost.process",
     ],
 )
@@ -60,10 +72,11 @@ cc_library(
 cc_binary(
     name = "bzlmod",
     srcs = ["bzlmod.cc"],
+    copts = copts,
     deps = [
-        "@docopt.cpp//:docopt",
         ":add_module",
-        ":update_module",
         ":init_module",
+        ":update_module",
+        "@docopt.cpp//:docopt",
     ],
 )

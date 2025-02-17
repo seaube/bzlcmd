@@ -62,6 +62,7 @@ struct source_config {
 	std::string                                  strip_prefix;
 	int                                          patch_strip;
 	std::unordered_map<std::string, std::string> patches;
+	std::unordered_map<std::string, std::string> overlay;
 	std::string                                  url;
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(
@@ -70,6 +71,7 @@ struct source_config {
 		strip_prefix,
 		patch_strip,
 		patches,
+		overlay,
 		url
 	)
 };

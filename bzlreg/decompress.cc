@@ -3,6 +3,7 @@
 #include <iostream>
 #include "libdeflate.h"
 #include "bzlreg/defer.hh"
+#include "bzlreg/unused.hh"
 
 using bzlreg::util::defer;
 
@@ -10,7 +11,7 @@ auto bzlreg::decompress_archive( //
 	const std::vector<std::byte>& compressed_data
 ) -> std::vector<std::byte> {
 	auto decomp = libdeflate_alloc_decompressor();
-	auto _decomp_cleanup = defer([&] { libdeflate_free_decompressor(decomp); });
+	UNUSED(auto) = defer([&] { libdeflate_free_decompressor(decomp); });
 
 	auto decompressed_data = std::vector<std::byte>{};
 	auto actual_decompressed_size = size_t{};

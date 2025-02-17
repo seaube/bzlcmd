@@ -15,6 +15,7 @@
 #include "bzlreg/defer.hh"
 #include "bzlreg/config_types.hh"
 #include "bzlreg/module_bazel.hh"
+#include "bzlreg/util.hh"
 
 namespace fs = std::filesystem;
 using bzlreg::util::defer;
@@ -22,43 +23,6 @@ using json = nlohmann::json;
 
 static auto is_valid_archive_url(std::string_view url) -> bool {
 	return url.starts_with("https://") || url.starts_with("http://");
-}
-
-static auto calc_sha256_integrity(auto&& data) -> std::string {
-	auto ctx = EVP_MD_CTX_new();
-
-	if(!ctx) {
-		return "";
-	}
-
-	auto _ctx_cleanup = defer([&] { EVP_MD_CTX_cleanup(ctx); });
-
-	if(!EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr)) {
-		return "";
-	}
-
-	if(!EVP_DigestUpdate(ctx, data.data(), data.size())) {
-		return "";
-	}
-
-	uint8_t      hash[EVP_MAX_MD_SIZE];
-	unsigned int hash_length = 0;
-
-	if(!EVP_DigestFinal_ex(ctx, hash, &hash_length)) {
-		return "";
-	}
-
-	auto b64_str = std::string{};
-	b64_str.resize(hash_length * 4);
-
-	auto b64_encode_size = EVP_EncodeBlock(
-		reinterpret_cast<uint8_t*>(b64_str.data()),
-		hash,
-		hash_length
-	);
-	b64_str.resize(b64_encode_size);
-
-	return "sha256-" + b64_str;
 }
 
 auto infer_repository_from_url( //
@@ -117,9 +81,11 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		return 1;
 	}
 
-	auto integrity = calc_sha256_integrity(*compressed_data);
-	if(integrity.empty()) {
-		std::cerr << "Failed to calculate sha256 integrity\n";
+	auto integrity = bzlreg::calc_integrity(
+		std::as_bytes(std::span{compressed_data->data(), compressed_data->size()})
+	);
+	if(!integrity) {
+		std::cerr << "Failed to calculate integrity\n";
 		return 1;
 	}
 
@@ -149,7 +115,7 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	}
 
 	auto source_config = bzlreg::source_config{
-		.integrity = integrity,
+		.integrity = *integrity,
 		.strip_prefix = std::string{strip_prefix},
 		.patch_strip = 0,
 		.patches = {},

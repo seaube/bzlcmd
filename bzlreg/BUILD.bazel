@@ -1,10 +1,12 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("//bazel:copts.bzl", "copts")
 
 package(default_visibility = ["//:__subpackages__"])
 
 cc_library(
     name = "config_types",
     hdrs = ["config_types.hh"],
+    copts = copts,
     deps = [
         "@nlohmann_json//:json",
     ],
@@ -12,18 +14,20 @@ cc_library(
 
 cc_library(
     name = "download",
-    hdrs = ["download.hh"],
     srcs = ["download.cc"],
+    hdrs = ["download.hh"],
+    copts = copts,
     deps = [
-        "@boost.process",
         "@boost.asio",
+        "@boost.process",
     ],
 )
 
 cc_library(
     name = "init_registry",
-    hdrs = ["init_registry.hh"],
     srcs = ["init_registry.cc"],
+    hdrs = ["init_registry.hh"],
+    copts = copts,
     deps = [
         ":config_types",
     ],
@@ -31,57 +35,120 @@ cc_library(
 
 cc_library(
     name = "add_module",
-    hdrs = ["add_module.hh"],
     srcs = ["add_module.cc"],
+    hdrs = ["add_module.hh"],
+    copts = copts,
     deps = [
         ":config_types",
-        ":download",
-        ":tar_view",
-        ":defer",
         ":decompress",
+        ":defer",
+        ":download",
         ":module_bazel",
+        ":tar_view",
+        ":util",
+        "@abseil-cpp//absl/strings",
         "@boost.url",
         "@boringssl//:crypto",
+    ],
+)
+
+cc_library(
+    name = "bazel_exec",
+    srcs = ["bazel_exec.cc"],
+    hdrs = ["bazel_exec.hh"],
+    copts = copts,
+    deps = [
+        ":calc_integrity",
+        ":config_types",
+        ":defer",
+        ":unused",
         "@abseil-cpp//absl/strings",
+        "@boost.asio",
+        "@boost.process",
+        "@boost.url",
+        "@boringssl//:crypto",
+        "@nlohmann_json//:json",
     ],
 )
 
 cc_library(
     name = "defer",
     hdrs = ["defer.hh"],
+    copts = copts,
 )
 
 cc_library(
     name = "decompress",
-    hdrs = ["decompress.hh"],
     srcs = ["decompress.cc"],
+    hdrs = ["decompress.hh"],
+    copts = copts,
     deps = [
         ":defer",
+        ":unused",
         "@libdeflate",
     ],
 )
 
 cc_library(
     name = "tar_view",
-    hdrs = ["tar_view.hh"],
     srcs = ["tar_view.cc"],
+    hdrs = ["tar_view.hh"],
+    copts = copts,
 )
 
 cc_library(
     name = "module_bazel",
-    hdrs = ["module_bazel.hh"],
     srcs = ["module_bazel.cc"],
+    hdrs = ["module_bazel.hh"],
+    copts = copts,
     deps = [
         "@abseil-cpp//absl/strings",
     ],
 )
 
+cc_library(
+    name = "util",
+    srcs = ["util.cc"],
+    hdrs = ["util.hh"],
+    copts = copts,
+    deps = [
+        ":config_types",
+        ":defer",
+        "@boringssl//:crypto",
+        "@nlohmann_json//:json",
+    ],
+)
+
+cc_library(
+    name = "calc_integrity",
+    srcs = ["calc_integrity.cc"],
+    hdrs = ["calc_integrity.hh"],
+    copts = copts,
+    deps = [
+        ":config_types",
+        ":defer",
+        ":util",
+        "@boringssl//:crypto",
+        "@nlohmann_json//:json",
+    ],
+)
+
+cc_library(
+    name = "unused",
+    hdrs = ["unused.hh"],
+    copts = copts,
+)
+
 cc_binary(
     name = "bzlreg",
     srcs = ["bzlreg.cc"],
+    copts = copts,
     deps = [
-        ":init_registry",
         ":add_module",
+        ":bazel_exec",
+        ":calc_integrity",
+        ":init_registry",
+        ":unused",
         "@docopt.cpp//:docopt",
     ],
 )

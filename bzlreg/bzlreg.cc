@@ -2,7 +2,9 @@
 #include <iostream>
 #include "docopt.h"
 #include "bzlreg/init_registry.hh"
+#include "bzlreg/bazel_exec.hh"
 #include "bzlreg/add_module.hh"
+#include "bzlreg/calc_integrity.hh"
 
 namespace fs = std::filesystem;
 
@@ -11,12 +13,43 @@ Bazel registry CLI utility
 
 Usage:
 	bzlreg init [<registry-dir>]
+	bzlreg build <label> [--registry=<path>]
+	bzlreg test <label> [--registry=<path>]
+	bzlreg run <label> [--registry=<path>]
 	bzlreg add-module <archive-url> [--strip-prefix=<str>] [--registry=<path>]
+	bzlreg calc-integrity <module> [--strip-prefix=<str>] [--registry=<path>]
 
 Options:
 	--registry=<path>     Registry directory. Defaults to current working directory.
 	--strip-prefix=<str>  Prefix stripped from archive and set in source.json.
 )docopt";
+
+static auto forward_bazel_subcommand(
+	const docopt::Options& options,
+	std::string_view       subcommand
+) -> int {
+	auto registry_dir = options.at("--registry") //
+		? fs::path{options.at("--registry").asString()}
+		: fs::current_path();
+	auto label = options.at("<label>").asString();
+	return bzlreg::bazel_exec({
+		.registry_dir = registry_dir,
+		.label = label,
+		.subcommand = subcommand,
+	});
+}
+
+static auto calc_integrity_command(const docopt::Options& options) -> int {
+	auto registry_dir = options.at("--registry") //
+		? fs::path{options.at("--registry").asString()}
+		: fs::current_path();
+	auto module = options.at("<module>").asString();
+
+	return bzlreg::calc_integrity({
+		.registry_dir = registry_dir,
+		.module_name = module,
+	});
+}
 
 auto main(int argc, char* argv[]) -> int {
 	auto bazel_working_dir = std::getenv("BUILD_WORKING_DIRECTORY");
@@ -33,6 +66,14 @@ auto main(int argc, char* argv[]) -> int {
 			: fs::current_path();
 
 		exit_code = bzlreg::init_registry(registry_dir);
+	} else if(args["build"].asBool()) {
+		exit_code = forward_bazel_subcommand(args, "build");
+	} else if(args["test"].asBool()) {
+		exit_code = forward_bazel_subcommand(args, "test");
+	} else if(args["run"].asBool()) {
+		exit_code = forward_bazel_subcommand(args, "run");
+	} else if(args["calc-integrity"].asBool()) {
+		exit_code = calc_integrity_command(args);
 	} else if(args["add-module"].asBool()) {
 		auto strip_prefix = args["--strip-prefix"] //
 			? args.at("--strip-prefix").asString()
