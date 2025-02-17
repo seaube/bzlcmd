@@ -1,5 +1,11 @@
-alias(
-    name = "bzlreg",
-    visibility = ["//visibility:public"],
-    actual = "//bzlreg:bzlreg",
+load("@bzlws//rules:bzlws_copy.bzl", "bzlws_copy")
+
+bzlws_copy(
+    name = "copy_dist",
+    srcs = [
+        "//bzlmod:all_platforms",
+        "//bzlreg:all_platforms",
+    ],
+    out = "dist/{FILENAME}",
+    force = True,
 )

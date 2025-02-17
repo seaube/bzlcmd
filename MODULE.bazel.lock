@@ -13,10 +13,13 @@
     "https://bcr.bazel.build/modules/apple_support/1.15.1/MODULE.bazel": "a0556fefca0b1bb2de8567b8827518f94db6a6e7e7d632b4c48dc5f865bc7c85",
     "https://bcr.bazel.build/modules/apple_support/1.15.1/source.json": "517f2b77430084c541bc9be2db63fdcbb7102938c5f64c17ee60ffda2e5cf07b",
     "https://bcr.bazel.build/modules/apple_support/1.5.0/MODULE.bazel": "50341a62efbc483e8a2a6aec30994a58749bd7b885e18dd96aa8c33031e558ef",
+    "https://bcr.bazel.build/modules/aspect_bazel_lib/2.13.0/MODULE.bazel": "af4a546cb88c618f2e241721d2d76b70b7ecfaa1d58fe27b9187d3edb9e418da",
+    "https://bcr.bazel.build/modules/aspect_bazel_lib/2.13.0/source.json": "5538ef77a1ecff41c119e040d4bc0148c83e9e79464a165ec86a1aa3171a5535",
     "https://bcr.bazel.build/modules/bazel_features/1.1.1/MODULE.bazel": "27b8c79ef57efe08efccbd9dd6ef70d61b4798320b8d3c134fd571f78963dbcd",
     "https://bcr.bazel.build/modules/bazel_features/1.11.0/MODULE.bazel": "f9382337dd5a474c3b7d334c2f83e50b6eaedc284253334cf823044a26de03e8",
     "https://bcr.bazel.build/modules/bazel_features/1.19.0/MODULE.bazel": "59adcdf28230d220f0067b1f435b8537dd033bfff8db21335ef9217919c7fb58",
     "https://bcr.bazel.build/modules/bazel_features/1.19.0/source.json": "d7bf14517c1b25b9d9c580b0f8795fceeae08a7590f507b76aace528e941375d",
+    "https://bcr.bazel.build/modules/bazel_features/1.9.0/MODULE.bazel": "885151d58d90d8d9c811eb75e3288c11f850e1d6b481a8c9f766adee4712358b",
     "https://bcr.bazel.build/modules/bazel_features/1.9.1/MODULE.bazel": "8f679097876a9b609ad1f60249c49d68bfab783dd9be012faf9d82547b14815a",
     "https://bcr.bazel.build/modules/bazel_skylib/1.0.3/MODULE.bazel": "bcb0fd896384802d1ad283b4e4eb4d718eebd8cb820b0a2c3a347fb971afd9d8",
     "https://bcr.bazel.build/modules/bazel_skylib/1.1.1/MODULE.bazel": "1add3e7d93ff2e6998f9e118022c84d163917d912f5afafb3058e3d2f1545b5e",
@@ -34,6 +37,8 @@
     "https://bcr.bazel.build/modules/boringssl/0.20250212.0/source.json": "982bb27925e52a8af5c047bb137510a6d8061a5c8ecbd0deeb0173aefd54d580",
     "https://bcr.bazel.build/modules/buildozer/7.1.2/MODULE.bazel": "2e8dd40ede9c454042645fd8d8d0cd1527966aa5c919de86661e62953cd73d84",
     "https://bcr.bazel.build/modules/buildozer/7.1.2/source.json": "c9028a501d2db85793a6996205c8de120944f50a0d570438fcae0457a5f9d1f8",
+    "https://bcr.bazel.build/modules/bzlws/0.2.0/MODULE.bazel": "c2e5a382bd0292979d946e829f7626e6e0ed079e247964d596b7c1f495763ac0",
+    "https://bcr.bazel.build/modules/bzlws/0.2.0/source.json": "08383d0316bc1fc1ca222396b0ef400a22a523c8fe431a749c227a23c3ebfae5",
     "https://bcr.bazel.build/modules/google_benchmark/1.8.2/MODULE.bazel": "a70cf1bba851000ba93b58ae2f6d76490a9feb74192e57ab8e8ff13c34ec50cb",
     "https://bcr.bazel.build/modules/googletest/1.11.0/MODULE.bazel": "3a83f095183f66345ca86aa13c58b59f9f94a2f81999c093d4eeaa2d262d12f4",
     "https://bcr.bazel.build/modules/googletest/1.14.0.bcr.1/MODULE.bazel": "22c31a561553727960057361aa33bf20fb2e98584bc4fec007906e27053f80c6",
@@ -80,11 +85,13 @@
     "https://bcr.bazel.build/modules/rules_foreign_cc/0.9.0/MODULE.bazel": "c9e8c682bf75b0e7c704166d79b599f93b72cfca5ad7477df596947891feeef6",
     "https://bcr.bazel.build/modules/rules_java/4.0.0/MODULE.bazel": "5a78a7ae82cd1a33cef56dc578c7d2a46ed0dca12643ee45edbb8417899e6f74",
     "https://bcr.bazel.build/modules/rules_java/5.3.5/MODULE.bazel": "a4ec4f2db570171e3e5eb753276ee4b389bae16b96207e9d3230895c99644b86",
+    "https://bcr.bazel.build/modules/rules_java/6.3.0/MODULE.bazel": "a97c7678c19f236a956ad260d59c86e10a463badb7eb2eda787490f4c969b963",
     "https://bcr.bazel.build/modules/rules_java/7.6.5/MODULE.bazel": "481164be5e02e4cab6e77a36927683263be56b7e36fef918b458d7a8a1ebadb1",
     "https://bcr.bazel.build/modules/rules_java/7.6.5/source.json": "a805b889531d1690e3c72a7a7e47a870d00323186a9904b36af83aa3d053ee8d",
     "https://bcr.bazel.build/modules/rules_jvm_external/4.4.2/MODULE.bazel": "a56b85e418c83eb1839819f0b515c431010160383306d13ec21959ac412d2fe7",
     "https://bcr.bazel.build/modules/rules_jvm_external/5.1/MODULE.bazel": "33f6f999e03183f7d088c9be518a63467dfd0be94a11d0055fe2d210f89aa909",
-    "https://bcr.bazel.build/modules/rules_jvm_external/5.1/source.json": "5abb45cc9beb27b77aec6a65a11855ef2b55d95dfdc358e9f312b78ae0ba32d5",
+    "https://bcr.bazel.build/modules/rules_jvm_external/5.2/MODULE.bazel": "d9351ba35217ad0de03816ef3ed63f89d411349353077348a45348b096615036",
+    "https://bcr.bazel.build/modules/rules_jvm_external/5.2/source.json": "10572111995bc349ce31c78f74b3c147f6b3233975c7fa5eff9211f6db0d34d9",
     "https://bcr.bazel.build/modules/rules_license/0.0.3/MODULE.bazel": "627e9ab0247f7d1e05736b59dbb1b6871373de5ad31c3011880b4133cafd4bd0",
     "https://bcr.bazel.build/modules/rules_license/0.0.7/MODULE.bazel": "088fbeb0b6a419005b89cf93fe62d9517c0a2b8bb56af3244af65ecfe37e7d5d",
     "https://bcr.bazel.build/modules/rules_license/1.0.0/MODULE.bazel": "a7fda60eefdf3d8c827262ba499957e4df06f659330bbe6cdbdb975b768bb65c",
@@ -104,10 +111,11 @@
     "https://bcr.bazel.build/modules/rules_python/0.4.0/MODULE.bazel": "9208ee05fd48bf09ac60ed269791cf17fb343db56c8226a720fbb1cdf467166c",
     "https://bcr.bazel.build/modules/stardoc/0.5.1/MODULE.bazel": "1a05d92974d0c122f5ccf09291442580317cdd859f07a8655f1db9a60374f9f8",
     "https://bcr.bazel.build/modules/stardoc/0.5.3/MODULE.bazel": "c7f6948dae6999bf0db32c1858ae345f112cacf98f174c7a8bb707e41b974f1c",
-    "https://bcr.bazel.build/modules/stardoc/0.5.3/source.json": "cd53fe968dc8cd98197c052db3db6d82562960c87b61e7a90ee96f8e4e0dda97",
-    "https://bcr.bazel.build/modules/toolchains_llvm/1.3.0/MODULE.bazel": "6e02731e51f7eb2ec4b01c5e79e722bf738a631f6e03d9b4917cbf2cb027bee1",
-    "https://bcr.bazel.build/modules/toolchains_llvm/1.3.0/source.json": "4ce0373a89c6df34dd37cd67285bb871d8e225d30dcb67dd093e077a04bbbb71",
+    "https://bcr.bazel.build/modules/stardoc/0.6.2/MODULE.bazel": "7060193196395f5dd668eda046ccbeacebfd98efc77fed418dbe2b82ffaa39fd",
+    "https://bcr.bazel.build/modules/stardoc/0.6.2/source.json": "d2ff8063b63b4a85e65fe595c4290f99717434fa9f95b4748a79a7d04dfed349",
     "https://bcr.bazel.build/modules/upb/0.0.0-20220923-a547704/MODULE.bazel": "7298990c00040a0e2f121f6c32544bab27d4452f80d9ce51349b1a28f3005c43",
+    "https://bcr.bazel.build/modules/yaml-cpp/0.8.0/MODULE.bazel": "879443fbbf128457a187bea6f278d05789f3fc465bb22c2e0fe7fdb52e45eef0",
+    "https://bcr.bazel.build/modules/yaml-cpp/0.8.0/source.json": "8571372713f5030dbe517fb0cec549cef82aa5b76b4a178f902b95673ab5841c",
     "https://bcr.bazel.build/modules/zlib/1.2.11/MODULE.bazel": "07b389abc85fdbca459b69e2ec656ae5622873af3f845e1c9d80fe179f3effa0",
     "https://bcr.bazel.build/modules/zlib/1.2.12/MODULE.bazel": "3b1a8834ada2a883674be8cbd36ede1b6ec481477ada359cd2d3ddc562340b27",
     "https://bcr.bazel.build/modules/zlib/1.3.1.bcr.3/MODULE.bazel": "af322bc08976524477c79d1e45e241b6efbeb918c497e8840b8ab116802dda79",
@@ -122,9 +130,11 @@
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/abseil-cpp/20250127.0/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/apple_support/1.15.1/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/apple_support/1.5.0/MODULE.bazel": "not found",
+    "https://raw.githubusercontent.com/bazelboost/registry/main/modules/aspect_bazel_lib/2.13.0/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/bazel_features/1.1.1/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/bazel_features/1.11.0/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/bazel_features/1.19.0/MODULE.bazel": "not found",
+    "https://raw.githubusercontent.com/bazelboost/registry/main/modules/bazel_features/1.9.0/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/bazel_features/1.9.1/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/bazel_skylib/1.0.3/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/bazel_skylib/1.1.1/MODULE.bazel": "not found",
@@ -257,6 +267,7 @@
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/boringssl/0.0.0-20230215-5c22014/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/boringssl/0.20250212.0/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/buildozer/7.1.2/MODULE.bazel": "not found",
+    "https://raw.githubusercontent.com/bazelboost/registry/main/modules/bzlws/0.2.0/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/google_benchmark/1.8.2/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/googletest/1.11.0/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/googletest/1.14.0.bcr.1/MODULE.bazel": "not found",
@@ -294,9 +305,11 @@
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/rules_foreign_cc/0.9.0/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/rules_java/4.0.0/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/rules_java/5.3.5/MODULE.bazel": "not found",
+    "https://raw.githubusercontent.com/bazelboost/registry/main/modules/rules_java/6.3.0/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/rules_java/7.6.5/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/rules_jvm_external/4.4.2/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/rules_jvm_external/5.1/MODULE.bazel": "not found",
+    "https://raw.githubusercontent.com/bazelboost/registry/main/modules/rules_jvm_external/5.2/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/rules_license/0.0.3/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/rules_license/0.0.7/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/rules_license/1.0.0/MODULE.bazel": "not found",
@@ -312,8 +325,9 @@
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/rules_python/0.4.0/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/stardoc/0.5.1/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/stardoc/0.5.3/MODULE.bazel": "not found",
-    "https://raw.githubusercontent.com/bazelboost/registry/main/modules/toolchains_llvm/1.3.0/MODULE.bazel": "not found",
+    "https://raw.githubusercontent.com/bazelboost/registry/main/modules/stardoc/0.6.2/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/upb/0.0.0-20220923-a547704/MODULE.bazel": "not found",
+    "https://raw.githubusercontent.com/bazelboost/registry/main/modules/yaml-cpp/0.8.0/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/zlib/1.2.11/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/zlib/1.2.12/MODULE.bazel": "not found",
     "https://raw.githubusercontent.com/bazelboost/registry/main/modules/zlib/1.3.1.bcr.3/MODULE.bazel": "not found"
@@ -348,81 +362,183 @@
         ]
       }
     },
-    "@@toolchains_llvm~//toolchain/extensions:llvm.bzl%llvm": {
+    "@@hermetic_cc_toolchain~//toolchain:ext.bzl%toolchains": {
       "general": {
-        "bzlTransitiveDigest": "DbHjmsbc+5UNcxe3NTxwxbUMxZqW/A99vu2JcopPuJk=",
-        "usagesDigest": "vIZnx4KhOBvaffSRwDaGd48TuZW3RWdRO3Wl2wA7FfE=",
+        "bzlTransitiveDigest": "boB5moHk2XuO2xZ+nOeKTDRCPIlvvSpmXpcz+kQh5Rw=",
+        "usagesDigest": "OW5uyjvvPnynQbSVIAHmpqCmnQJbc4KhcOU3iGuS8Ts=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
         "generatedRepoSpecs": {
-          "llvm_toolchain_llvm": {
-            "bzlFile": "@@toolchains_llvm~//toolchain:rules.bzl",
-            "ruleClassName": "llvm",
+          "zig_sdk-linux-amd64": {
+            "bzlFile": "@@hermetic_cc_toolchain~//toolchain:defs.bzl",
+            "ruleClassName": "zig_repository",
             "attributes": {
-              "alternative_llvm_sources": [],
-              "auth_patterns": {},
-              "distribution": "auto",
-              "exec_arch": "",
-              "exec_os": "",
-              "libclang_rt": {},
-              "llvm_mirror": "",
-              "llvm_version": "16.0.4",
-              "llvm_versions": {},
-              "netrc": "",
-              "sha256": {},
-              "strip_prefix": {},
-              "urls": {}
+              "version": "0.14.0-dev.2851+b074fb7dd",
+              "url_formats": [
+                "https://mirror.bazel.build/ziglang.org/builds/zig-{host_platform}-{version}.{_ext}",
+                "https://ziglang.org/builds/zig-{host_platform}-{version}.{_ext}"
+              ],
+              "host_platform_sha256": {
+                "linux-aarch64": "",
+                "linux-x86_64": "",
+                "macos-aarch64": "",
+                "macos-x86_64": "",
+                "windows-aarch64": "",
+                "windows-x86_64": ""
+              },
+              "host_platform_ext": {
+                "linux-aarch64": "tar.xz",
+                "linux-x86_64": "tar.xz",
+                "macos-aarch64": "tar.xz",
+                "macos-x86_64": "tar.xz",
+                "windows-x86_64": "zip"
+              },
+              "exec_os": "linux",
+              "exec_arch": "amd64"
             }
           },
-          "llvm_toolchain": {
-            "bzlFile": "@@toolchains_llvm~//toolchain:rules.bzl",
-            "ruleClassName": "toolchain",
+          "zig_sdk-linux-arm64": {
+            "bzlFile": "@@hermetic_cc_toolchain~//toolchain:defs.bzl",
+            "ruleClassName": "zig_repository",
             "attributes": {
-              "absolute_paths": false,
-              "archive_flags": {},
-              "compile_flags": {},
-              "conly_flags": {},
-              "coverage_compile_flags": {},
-              "coverage_link_flags": {},
-              "cxx_builtin_include_directories": {},
-              "cxx_flags": {},
-              "cxx_standard": {},
-              "dbg_compile_flags": {},
-              "exec_arch": "",
-              "exec_os": "",
-              "extra_exec_compatible_with": {},
-              "extra_target_compatible_with": {},
-              "link_flags": {},
-              "link_libs": {},
-              "llvm_versions": {
-                "": "16.0.4"
+              "version": "0.14.0-dev.2851+b074fb7dd",
+              "url_formats": [
+                "https://mirror.bazel.build/ziglang.org/builds/zig-{host_platform}-{version}.{_ext}",
+                "https://ziglang.org/builds/zig-{host_platform}-{version}.{_ext}"
+              ],
+              "host_platform_sha256": {
+                "linux-aarch64": "",
+                "linux-x86_64": "",
+                "macos-aarch64": "",
+                "macos-x86_64": "",
+                "windows-aarch64": "",
+                "windows-x86_64": ""
               },
-              "opt_compile_flags": {},
-              "opt_link_flags": {},
-              "stdlib": {},
-              "target_settings": {},
-              "unfiltered_compile_flags": {},
-              "toolchain_roots": {},
-              "sysroot": {}
+              "host_platform_ext": {
+                "linux-aarch64": "tar.xz",
+                "linux-x86_64": "tar.xz",
+                "macos-aarch64": "tar.xz",
+                "macos-x86_64": "tar.xz",
+                "windows-x86_64": "zip"
+              },
+              "exec_os": "linux",
+              "exec_arch": "arm64"
             }
+          },
+          "zig_sdk-windows-amd64": {
+            "bzlFile": "@@hermetic_cc_toolchain~//toolchain:defs.bzl",
+            "ruleClassName": "zig_repository",
+            "attributes": {
+              "version": "0.14.0-dev.2851+b074fb7dd",
+              "url_formats": [
+                "https://mirror.bazel.build/ziglang.org/builds/zig-{host_platform}-{version}.{_ext}",
+                "https://ziglang.org/builds/zig-{host_platform}-{version}.{_ext}"
+              ],
+              "host_platform_sha256": {
+                "linux-aarch64": "",
+                "linux-x86_64": "",
+                "macos-aarch64": "",
+                "macos-x86_64": "",
+                "windows-aarch64": "",
+                "windows-x86_64": ""
+              },
+              "host_platform_ext": {
+                "linux-aarch64": "tar.xz",
+                "linux-x86_64": "tar.xz",
+                "macos-aarch64": "tar.xz",
+                "macos-x86_64": "tar.xz",
+                "windows-x86_64": "zip"
+              },
+              "exec_os": "windows",
+              "exec_arch": "amd64"
+            }
+          },
+          "zig_sdk-macos-arm64": {
+            "bzlFile": "@@hermetic_cc_toolchain~//toolchain:defs.bzl",
+            "ruleClassName": "zig_repository",
+            "attributes": {
+              "version": "0.14.0-dev.2851+b074fb7dd",
+              "url_formats": [
+                "https://mirror.bazel.build/ziglang.org/builds/zig-{host_platform}-{version}.{_ext}",
+                "https://ziglang.org/builds/zig-{host_platform}-{version}.{_ext}"
+              ],
+              "host_platform_sha256": {
+                "linux-aarch64": "",
+                "linux-x86_64": "",
+                "macos-aarch64": "",
+                "macos-x86_64": "",
+                "windows-aarch64": "",
+                "windows-x86_64": ""
+              },
+              "host_platform_ext": {
+                "linux-aarch64": "tar.xz",
+                "linux-x86_64": "tar.xz",
+                "macos-aarch64": "tar.xz",
+                "macos-x86_64": "tar.xz",
+                "windows-x86_64": "zip"
+              },
+              "exec_os": "macos",
+              "exec_arch": "arm64"
+            }
+          },
+          "zig_sdk-macos-amd64": {
+            "bzlFile": "@@hermetic_cc_toolchain~//toolchain:defs.bzl",
+            "ruleClassName": "zig_repository",
+            "attributes": {
+              "version": "0.14.0-dev.2851+b074fb7dd",
+              "url_formats": [
+                "https://mirror.bazel.build/ziglang.org/builds/zig-{host_platform}-{version}.{_ext}",
+                "https://ziglang.org/builds/zig-{host_platform}-{version}.{_ext}"
+              ],
+              "host_platform_sha256": {
+                "linux-aarch64": "",
+                "linux-x86_64": "",
+                "macos-aarch64": "",
+                "macos-x86_64": "",
+                "windows-aarch64": "",
+                "windows-x86_64": ""
+              },
+              "host_platform_ext": {
+                "linux-aarch64": "tar.xz",
+                "linux-x86_64": "tar.xz",
+                "macos-aarch64": "tar.xz",
+                "macos-x86_64": "tar.xz",
+                "windows-x86_64": "zip"
+              },
+              "exec_os": "macos",
+              "exec_arch": "amd64"
+            }
+          },
+          "zig_sdk": {
+            "bzlFile": "@@hermetic_cc_toolchain~//toolchain:defs.bzl",
+            "ruleClassName": "host_zig_repository",
+            "attributes": {}
           }
+        },
+        "moduleExtensionMetadata": {
+          "explicitRootModuleDirectDeps": [
+            "zig_sdk",
+            "zig_sdk-linux-amd64",
+            "zig_sdk-linux-arm64",
+            "zig_sdk-windows-amd64",
+            "zig_sdk-macos-arm64",
+            "zig_sdk-macos-amd64"
+          ],
+          "explicitRootModuleDirectDevDeps": [],
+          "useAllRepos": "NO",
+          "reproducible": false
         },
         "recordedRepoMappingEntries": [
           [
-            "toolchains_llvm~",
-            "bazel_skylib",
-            "bazel_skylib~"
-          ],
-          [
-            "toolchains_llvm~",
+            "hermetic_cc_toolchain~",
             "bazel_tools",
             "bazel_tools"
           ],
           [
-            "toolchains_llvm~",
-            "toolchains_llvm",
-            "toolchains_llvm~"
+            "hermetic_cc_toolchain~",
+            "hermetic_cc_toolchain",
+            "hermetic_cc_toolchain~"
           ]
         ]
       }
