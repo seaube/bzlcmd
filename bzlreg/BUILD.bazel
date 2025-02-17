@@ -115,6 +115,7 @@ cc_library(
     deps = [
         ":config_types",
         ":defer",
+        ":unused",
         "@boringssl//:crypto",
         "@nlohmann_json//:json",
     ],

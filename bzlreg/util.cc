@@ -9,6 +9,7 @@
 #include <openssl/evp.h>
 #include "bzlreg/defer.hh"
 #include "bzlreg/config_types.hh"
+#include "bzlreg/unused.hh"
 #include "nlohmann/json.hpp"
 
 using bzlreg::util::defer;
@@ -20,13 +21,16 @@ using json = nlohmann::json;
 auto bzlreg::calc_integrity( //
 	std::span<const std::byte> data
 ) -> std::optional<std::string> {
-	auto ctx = EVP_MD_CTX_new();
+	auto* ctx = EVP_MD_CTX_new();
 
 	if(!ctx) {
 		return std::nullopt;
 	}
 
-	auto _ctx_cleanup = defer([&] { EVP_MD_CTX_cleanup(ctx); });
+	UNUSED(auto) = defer([ctx] {
+		// TODO: figure out why this crashes
+		// EVP_MD_CTX_free(ctx);
+	});
 
 	if(!EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr)) {
 		return std::nullopt;
@@ -98,7 +102,7 @@ auto bzlreg::calc_source_integrity( //
 	}
 
 	std::for_each(
-		std::execution::par_unseq,
+		std::execution::seq,
 		integrity_paths.begin(),
 		integrity_paths.end(),
 		[&](std::pair<const std::string, std::string>& pair) {

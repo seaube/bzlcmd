@@ -23,7 +23,8 @@ auto read_file_contents(
 
 	ec = {};
 
-	::FILE* fp = ::fopen(path.string().c_str(), "rb");
+	auto    path_str = path.generic_string();
+	::FILE* fp = ::fopen(path_str.c_str(), "rb");
 	if(!fp) {
 		ec = make_error_code(std::errc::no_such_file_or_directory);
 		return;
