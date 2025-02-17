@@ -110,5 +110,13 @@ auto bzlreg::bazel_exec(const bazel_exec_options& options) -> int {
 
 	bazel_proc.wait();
 
-	return bazel_proc.exit_code();
+	auto exit_code = bazel_proc.exit_code();
+
+	bp::spawn(
+		bp::exe(bazel_exe),
+		bp::start_dir(temp_dir.generic_string()),
+		bp::args({"shutdown"s})
+	);
+
+	return exit_code;
 }
