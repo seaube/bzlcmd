@@ -1,5 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
-load("//bazel:copts.bzl", "copts")
+load("//bazel:copts.bzl", "copts", "for_all_platforms")
 
 package(default_visibility = ["//:__subpackages__"])
 
@@ -80,3 +80,5 @@ cc_binary(
         "@docopt.cpp//:docopt",
     ],
 )
+
+for_all_platforms("bzlmod")
