@@ -44,13 +44,8 @@ static auto infer_module_name( //
 	std::string_view strip_prefix
 ) -> std::string {
 	if(!strip_prefix.empty()) {
-		auto dash_idx = strip_prefix.find('-');
-		if(dash_idx == std::string::npos) {
-			return std::string{strip_prefix};
-		}
+		return std::string{strip_prefix.substr(0, strip_prefix.find('-'))};
 	}
-
-	__debugbreak();
 
 	// TODO: search for some common files
 	return "";
@@ -61,13 +56,11 @@ static auto infer_module_version( //
 	std::string_view strip_prefix
 ) -> std::string {
 	if(!strip_prefix.empty()) {
-		auto dash_idx = strip_prefix.find_last_not_of('-');
+		auto dash_idx = strip_prefix.find_last_of('-');
 		if(dash_idx != std::string::npos) {
-			return std::string{strip_prefix.substr(dash_idx)};
+			return std::string{strip_prefix.substr(dash_idx + 1)};
 		}
 	}
-
-	__debugbreak();
 
 	// TODO: search for some common files
 	return "";
@@ -83,7 +76,6 @@ static auto guess_strip_prefix(bzlreg::tar_view tar_view) -> std::string {
 		}
 
 		auto slash_idx = name.find("/");
-		std::cout << "name=" << name << "\n";
 		if(slash_idx == std::string::npos) {
 			return "";
 		}
@@ -104,7 +96,7 @@ static auto guess_strip_prefix(bzlreg::tar_view tar_view) -> std::string {
 auto bzlreg::add_module(add_module_options options) -> int {
 	auto registry_dir = options.registry_dir;
 	auto archive_url_str = options.archive_url;
-	auto strip_prefix = options.strip_prefix;
+	auto strip_prefix = std::string{options.strip_prefix};
 
 	if(!fs::exists(registry_dir / "bazel_registry.json")) {
 		std::cerr << std::format(
@@ -157,6 +149,8 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		return 1;
 	}
 
+	auto module_name = std::string{};
+	auto module_version = std::string{};
 	auto module_bzl = std::optional<bzlreg::module_bazel>{};
 	auto tar_view = bzlreg::tar_view{decompressed_data};
 
@@ -171,10 +165,8 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	);
 	if(!module_bzl_view) {
 		std::cerr << "[WARN] no MODULE.bazel file found in archive\n";
-		std::cout << "[INFO] creating MODULE.bazel file\n";
-		auto& new_module = module_bzl.emplace();
-		new_module.name = infer_module_name(tar_view, strip_prefix);
-		new_module.version = infer_module_version(tar_view, strip_prefix);
+		module_name = infer_module_name(tar_view, strip_prefix);
+		module_version = infer_module_version(tar_view, strip_prefix);
 	} else {
 		module_bzl = bzlreg::module_bazel::parse(module_bzl_view.string_view());
 
@@ -182,6 +174,9 @@ auto bzlreg::add_module(add_module_options options) -> int {
 			std::cerr << "Failed to parse MODULE.bazel\n";
 			return 1;
 		}
+
+		module_name = module_bzl->name;
+		module_version = module_bzl->version;
 	}
 
 	auto source_config = bzlreg::source_config{
@@ -192,9 +187,14 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		.url = std::string{archive_url_str},
 	};
 
-	auto module_dir = modules_dir / module_bzl->name;
-	auto source_config_path = module_dir / module_bzl->version / "source.json";
-	auto module_bazel_path = module_dir / module_bzl->version / "MODULE.bazel";
+	if(module_name.empty() || module_version.empty()) {
+		std::cerr << "Couldn't decide on module name or version\n";
+		return 1;
+	}
+
+	auto module_dir = modules_dir / module_name;
+	auto source_config_path = module_dir / module_version / "source.json";
+	auto module_bazel_path = module_dir / module_version / "MODULE.bazel";
 	fs::create_directories(source_config_path.parent_path(), ec);
 
 	auto metadata_config_path = module_dir / "metadata.json";
@@ -205,17 +205,17 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	}
 
 	for(auto version : metadata_config.versions) {
-		if(module_bzl->version == version) {
+		if(module_version == version) {
 			std::cerr << std::format( //
 				"{} already exists for {}\n",
 				version,
-				module_bzl->name
+				module_name
 			);
 			return 1;
 		}
 	}
 
-	metadata_config.versions.emplace_back(module_bzl->version);
+	metadata_config.versions.emplace_back(module_version);
 
 	if(!metadata_config.repository) {
 		metadata_config.repository.emplace();
@@ -250,7 +250,10 @@ auto bzlreg::add_module(add_module_options options) -> int {
 
 	std::ofstream{metadata_config_path} << json{metadata_config}[0].dump(4);
 	std::ofstream{source_config_path} << json{source_config}[0].dump(4);
-	std::ofstream{module_bazel_path} << module_bzl_view.string_view();
+	if(module_bzl_view) {
+		std::ofstream{module_bazel_path} << module_bzl_view.string_view();
+	} else {
+	}
 
 	return 0;
 }

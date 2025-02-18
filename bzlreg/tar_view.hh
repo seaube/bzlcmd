@@ -10,9 +10,9 @@ class tar_view;
 
 class tar_view_file {
 	friend tar_view;
-	std::byte* _data;
+	std::span<std::byte> _data;
 
-	tar_view_file(std::byte* data) noexcept;
+	tar_view_file(std::span<std::byte> data) noexcept;
 
 public:
 	tar_view_file();
@@ -44,7 +44,7 @@ public:
 	class iterator {
 		friend tar_view;
 
-		std::byte* _data = nullptr;
+		std::span<std::byte> _data = {};
 
 		iterator() = default;
 		iterator(const iterator&) = default;
