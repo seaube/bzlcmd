@@ -11,6 +11,7 @@ constexpr auto TAR_HEADER_SIZE = 512;
 constexpr auto TAR_HEADER_FILE_NAME_MAX_LENGTH = 100;
 constexpr auto TAR_HEADER_FILE_SIZE_OFFSET = 124;
 constexpr auto TAR_HEADER_FILE_SIZE_LENGTH = 12;
+constexpr auto USTAR_HEADER_FILE_NAME_PREFIX_MAX_LENGTH = 155;
 
 bzlreg::tar_view::tar_view(tar_view&&) = default;
 bzlreg::tar_view::tar_view(const tar_view&) = default;
@@ -30,6 +31,31 @@ static size_t round_up_to_multiple( //
 ) {
 	assert(multiple && ((multiple & (multiple - 1)) == 0));
 	return (num + multiple - 1) & -multiple;
+}
+
+auto bzlreg::tar_view::begin() -> iterator {
+	auto itr = iterator{};
+	itr._data = _tar_bytes.data();
+	return itr;
+}
+
+auto bzlreg::tar_view::end() const noexcept -> sentinel {
+	return {};
+}
+
+auto bzlreg::tar_view::iterator::operator!=(sentinel) const -> bool {
+	return _data != nullptr;
+}
+
+auto bzlreg::tar_view::iterator::operator++() -> iterator& {
+	assert(_data != nullptr);
+	auto file_size = operator*().size();
+	_data = _data + TAR_HEADER_SIZE + round_up_to_multiple(file_size, 512);
+	return *this;
+}
+
+auto bzlreg::tar_view::iterator::operator*() const -> tar_view_file {
+	return tar_view_file{_data};
 }
 
 auto bzlreg::tar_view::file( //
@@ -58,18 +84,31 @@ bzlreg::tar_view_file::tar_view_file( //
 	: _data(data) {
 }
 
+bzlreg::tar_view_file::tar_view_file() : _data(nullptr) {
+}
+
 bzlreg::tar_view_file::operator bool() const noexcept {
 	return _data != nullptr;
 }
 
-auto bzlreg::tar_view_file::name() const noexcept -> std::string_view {
+auto bzlreg::tar_view_file::name() const noexcept -> std::string {
 	assert(*this);
 
 	auto name_cstr = reinterpret_cast<char*>(_data);
 	auto name_len = name_cstr[TAR_HEADER_FILE_NAME_MAX_LENGTH - 1] == '\0' //
 		? std::strlen(name_cstr)
 		: TAR_HEADER_FILE_SIZE_LENGTH;
-	return std::string_view{name_cstr, name_len};
+	auto name_str = std::string{name_cstr, name_len};
+	auto maybe_ustar = name_cstr + 257;
+
+	if(maybe_ustar[5] == '\0' && strcmp(maybe_ustar, "ustar") == 0) {
+		auto name_prefix_cstr = name_cstr + 345;
+		auto name_prefix_len = strlen(name_prefix_cstr);
+		auto name_prefix_str = std::string{name_prefix_cstr, name_prefix_len};
+		return name_prefix_str + name_str;
+	}
+
+	return name_str;
 }
 
 auto bzlreg::tar_view_file::size() const noexcept -> size_t {

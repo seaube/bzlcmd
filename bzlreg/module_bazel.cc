@@ -104,8 +104,8 @@ auto bzlreg::module_bazel::parse( //
 			}
 
 			mod.bazel_deps.emplace_back(
-				attr_as_string(result.attrs.at("name")),
-				attr_as_string(result.attrs.at("version"))
+				std::string{attr_as_string(result.attrs.at("name"))},
+				std::string{attr_as_string(result.attrs.at("version"))}
 			);
 		}
 	}

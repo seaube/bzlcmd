@@ -2,12 +2,12 @@
 
 #include <optional>
 #include <vector>
-#include <string_view>
+#include <string>
 
 namespace bzlreg {
 struct bazel_dep {
-	std::string_view name;
-	std::string_view version;
+	std::string name;
+	std::string version;
 };
 
 struct module_bazel {
@@ -15,9 +15,9 @@ struct module_bazel {
 		std::string_view contents
 	) -> std::optional<module_bazel>;
 
-	std::string_view name;
-	std::string_view version;
-	int              compatibility_level;
+	std::string name;
+	std::string version;
+	int         compatibility_level;
 
 	std::vector<bazel_dep> bazel_deps;
 };

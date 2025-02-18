@@ -39,6 +39,68 @@ auto infer_repository_from_url( //
 	return std::nullopt;
 }
 
+static auto infer_module_name( //
+	bzlreg::tar_view tar_view,
+	std::string_view strip_prefix
+) -> std::string {
+	if(!strip_prefix.empty()) {
+		auto dash_idx = strip_prefix.find('-');
+		if(dash_idx == std::string::npos) {
+			return std::string{strip_prefix};
+		}
+	}
+
+	__debugbreak();
+
+	// TODO: search for some common files
+	return "";
+}
+
+static auto infer_module_version( //
+	bzlreg::tar_view tar_view,
+	std::string_view strip_prefix
+) -> std::string {
+	if(!strip_prefix.empty()) {
+		auto dash_idx = strip_prefix.find_last_not_of('-');
+		if(dash_idx != std::string::npos) {
+			return std::string{strip_prefix.substr(dash_idx)};
+		}
+	}
+
+	__debugbreak();
+
+	// TODO: search for some common files
+	return "";
+}
+
+static auto guess_strip_prefix(bzlreg::tar_view tar_view) -> std::string {
+	auto strip_prefix = std::string{};
+	for(bzlreg::tar_view_file f : tar_view) {
+		auto name = f.name();
+
+		if(name == "pax_global_header") {
+			continue;
+		}
+
+		auto slash_idx = name.find("/");
+		std::cout << "name=" << name << "\n";
+		if(slash_idx == std::string::npos) {
+			return "";
+		}
+		auto prefix = name.substr(0, slash_idx);
+		if(strip_prefix.empty()) {
+			strip_prefix = prefix;
+			continue;
+		}
+
+		if(strip_prefix != prefix) {
+			return "";
+		}
+	}
+
+	return strip_prefix;
+}
+
 auto bzlreg::add_module(add_module_options options) -> int {
 	auto registry_dir = options.registry_dir;
 	auto archive_url_str = options.archive_url;
@@ -95,7 +157,12 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		return 1;
 	}
 
+	auto module_bzl = std::optional<bzlreg::module_bazel>{};
 	auto tar_view = bzlreg::tar_view{decompressed_data};
+
+	if(strip_prefix.empty()) {
+		strip_prefix = guess_strip_prefix(tar_view);
+	}
 
 	auto module_bzl_view = tar_view.file(
 		strip_prefix.empty() //
@@ -103,15 +170,18 @@ auto bzlreg::add_module(add_module_options options) -> int {
 			: std::string{strip_prefix} + "/MODULE.bazel"
 	);
 	if(!module_bzl_view) {
-		std::cerr << "Failed to find MODULE.bazel in archive\n";
-		return 1;
-	}
+		std::cerr << "[WARN] no MODULE.bazel file found in archive\n";
+		std::cout << "[INFO] creating MODULE.bazel file\n";
+		auto& new_module = module_bzl.emplace();
+		new_module.name = infer_module_name(tar_view, strip_prefix);
+		new_module.version = infer_module_version(tar_view, strip_prefix);
+	} else {
+		module_bzl = bzlreg::module_bazel::parse(module_bzl_view.string_view());
 
-	auto module_bzl = bzlreg::module_bazel::parse(module_bzl_view.string_view());
-
-	if(!module_bzl) {
-		std::cerr << "Failed to parse MODULE.bazel\n";
-		return 1;
+		if(!module_bzl) {
+			std::cerr << "Failed to parse MODULE.bazel\n";
+			return 1;
+		}
 	}
 
 	auto source_config = bzlreg::source_config{
