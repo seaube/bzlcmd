@@ -2,7 +2,7 @@
 
 #include <optional>
 #include <vector>
-#include <string_view>
+#include <string>
 
 namespace bzlreg {
 struct bazel_dep {
