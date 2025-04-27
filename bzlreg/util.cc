@@ -71,19 +71,25 @@ auto bzlreg::calc_source_integrity( //
 	auto integrity_paths = std::unordered_map<std::string, std::string>{};
 	auto integrity_errors = std::unordered_map<std::string, std::string>{};
 
-	for(auto& entry : fs::recursive_directory_iterator(patches_dir)) {
-		if(entry.is_regular_file()) {
-			auto rel_path = fs::proximate(entry.path(), module_dir).generic_string();
-			integrity_paths.emplace(rel_path, ""s);
-			integrity_errors.emplace(rel_path, ""s);
+	if(fs::exists(patches_dir)) {
+		for(auto& entry : fs::recursive_directory_iterator(patches_dir)) {
+			if(entry.is_regular_file()) {
+				auto rel_path =
+					fs::proximate(entry.path(), module_dir).generic_string();
+				integrity_paths.emplace(rel_path, ""s);
+				integrity_errors.emplace(rel_path, ""s);
+			}
 		}
 	}
 
-	for(auto& entry : fs::recursive_directory_iterator(overlay_dir)) {
-		if(entry.is_regular_file()) {
-			auto rel_path = fs::proximate(entry.path(), module_dir).generic_string();
-			integrity_paths.emplace(rel_path, ""s);
-			integrity_errors.emplace(rel_path, ""s);
+	if(fs::exists(overlay_dir)) {
+		for(auto& entry : fs::recursive_directory_iterator(overlay_dir)) {
+			if(entry.is_regular_file()) {
+				auto rel_path =
+					fs::proximate(entry.path(), module_dir).generic_string();
+				integrity_paths.emplace(rel_path, ""s);
+				integrity_errors.emplace(rel_path, ""s);
+			}
 		}
 	}
 

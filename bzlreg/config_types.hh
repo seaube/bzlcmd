@@ -10,7 +10,7 @@ namespace bzlreg {
 struct bazel_registry_config {
 	std::vector<std::string> mirrors;
 
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(bazel_registry_config, mirrors);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT(bazel_registry_config, mirrors);
 };
 
 struct metadata_config {
@@ -65,7 +65,7 @@ struct source_config {
 	std::unordered_map<std::string, std::string> overlay;
 	std::string                                  url;
 
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT(
 		source_config,
 		integrity,
 		strip_prefix,
