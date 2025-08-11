@@ -16,7 +16,7 @@ jobs:
             /Users/runneradmin/AppData/Local/bazelisk
             /Users/runneradmin/.cache/bazel-disk-cache
           key: ${{runner.os}}-bazel-cache
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-windows-amd64.exe -o .\buildozer.exe
       - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
       - run: cp .\bazel-bin\bzlmod\bzlmod.exe .\bzlmod-windows-amd64.exe && cp .\bazel-bin\bzlreg\bzlreg.exe .\bzlreg-windows-amd64.exe 
@@ -36,7 +36,7 @@ jobs:
             ~/.cache/bazelisk
             ~/.cache/bazel-disk-cache
           key: ${{runner.os}}-bazel-cache
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
       - run: cp ./bazel-bin/bzlmod/bzlmod ./bzlmod-linux-amd64 && cp ./bazel-bin/bzlreg/bzlreg ./bzlreg-linux-amd64
       - run: gh release upload ${{ github.event.release.tag_name }} bzlmod-linux-amd64 bzlreg-linux-amd64

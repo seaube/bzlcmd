@@ -9,7 +9,7 @@ jobs:
     name: Formatting Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: jidicula/clang-format-action@v4.15.0
         with: { clang-format-version: "18" }
 
@@ -22,7 +22,7 @@ jobs:
             /Users/runneradmin/AppData/Local/bazelisk
             /Users/runneradmin/.cache/bazel-disk-cache
           key: ${{runner.os}}-bazel-cache
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-windows-amd64.exe -o .\buildozer.exe
       - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
       - run: .\test\test.bat
@@ -37,6 +37,6 @@ jobs:
             ~/.cache/bazelisk
             ~/.cache/bazel-disk-cache
           key: ${{runner.os}}-bazel-cache
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
       - run: ./test/test.sh
