@@ -11,7 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: jidicula/clang-format-action@v4.15.0
-        with: { clang-format-version: "18" }
+        with:
+          clang-format-version: "18"
+          exclude-regex: 'bazel/registry'
 
   test-windows:
     runs-on: windows-latest
