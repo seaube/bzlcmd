@@ -1,0 +1,11 @@
+{
+  "type": "archive",
+  "integrity": "sha256-vGLpESY57Yj5REpSZ28Ul83psjUJfP6AfPGy9TMYZm0=",
+  "overlay": {
+    "BUILD.bazel": "sha256-q1mofY1FlnKjHGhnSWxb68UFHf11kcuBBBFcvSxga/4="
+  },
+  "patch_strip": 0,
+  "patches": {},
+  "strip_prefix": "docopt.cpp-400e6dd8e59196c914dcc2c56caf7dae7efa5eb3",
+  "url": "https://github.com/docopt/docopt.cpp/archive/400e6dd8e59196c914dcc2c56caf7dae7efa5eb3.tar.gz"
+}

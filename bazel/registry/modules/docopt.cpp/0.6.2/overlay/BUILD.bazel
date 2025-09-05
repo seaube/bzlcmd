@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "docopt",
+    srcs = [
+        "docopt.cpp",
+        "docopt_private.h",
+    ],
+    hdrs = [
+        "docopt.h",
+        "docopt_util.h",
+        "docopt_value.h",
+    ],
+    defines = ["DOCTOPT_USE_BOOST_REGEX"],
+    visibility = ["//visibility:public"],
+    deps = ["@boost.regex"],
+)

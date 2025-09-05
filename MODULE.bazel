@@ -4,20 +4,20 @@ module(
     compatibility_level = 1,
 )
 
-bazel_dep(name = "rules_cc", version = "0.2.3")
-bazel_dep(name = "bazel_skylib", version = "1.8.1")
-bazel_dep(name = "nlohmann_json", version = "3.12.0")
-bazel_dep(name = "boost.process", version = "1.83.0.bzl.2")
-bazel_dep(name = "boost.asio", version = "1.83.0.bzl.4")
-bazel_dep(name = "boost.url", version = "1.83.0.bzl.2")
-bazel_dep(name = "libdeflate", version = "1.19")
-bazel_dep(name = "abseil-cpp", version = "20250814.0")
-bazel_dep(name = "boringssl", version = "0.20250818.0")
-
 bazel_dep(name = "toolchains_llvm", version = "1.5.0", dev_dependency = True)
 bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
 
-bazel_dep(name = "docopt.cpp")
+bazel_dep(name = "rules_cc", version = "0.2.3")
+bazel_dep(name = "bazel_skylib", version = "1.8.1")
+bazel_dep(name = "nlohmann_json", version = "3.12.0")
+bazel_dep(name = "boost.process", version = "1.87.0")
+bazel_dep(name = "boost.asio", version = "1.87.0.bcr.1")
+bazel_dep(name = "boost.url", version = "1.87.0")
+bazel_dep(name = "boost.regex", version = "1.87.0")
+bazel_dep(name = "libdeflate", version = "1.19")
+bazel_dep(name = "abseil-cpp", version = "20250814.0")
+bazel_dep(name = "boringssl", version = "0.20250818.0")
+bazel_dep(name = "docopt.cpp", version = "0.6.2")
 
 git_override(
     module_name = "hedron_compile_commands",
@@ -32,10 +32,4 @@ use_repo(llvm, "llvm_toolchain", "llvm_toolchain_llvm")
 register_toolchains(
     "@llvm_toolchain//:all",
     dev_dependency = True,
-)
-
-git_override(
-    module_name = "docopt.cpp",
-    commit = "e2f9cdba36c3b70883cea848a8e4d72d9b9a3fac",
-    remote = "https://github.com/ecsact-dev/docopt.cpp",
 )
