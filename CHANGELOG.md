@@ -2,6 +2,44 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.6 - 2025-09-06
+#### Bug Fixes
+- handle modules without overlay or patch - (6e50176) - Ezekiel Warren
+#### Features
+- support wider range of archives + name fix (#107) - (1e3a11e) - Ezekiel Warren
+- more flexible add archive (#76) - (3872836) - Ezekiel Warren
+#### Miscellaneous Chores
+- **(deps)** update dependency toolchains_llvm to v1.5.0 (#102) - (cc334fb) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.2.3 (#101) - (4398224) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.2.2 (#100) - (415c30b) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.2.1 (#99) - (87cc84d) - renovate[bot]
+- **(deps)** update dependency boringssl to v0.20250818.0 (#98) - (d834af3) - renovate[bot]
+- **(deps)** update dependency abseil-cpp to v20250814 (#97) - (98b793c) - renovate[bot]
+- **(deps)** update actions/checkout action to v5 (#96) - (d4279bd) - renovate[bot]
+- **(deps)** update dependency boringssl to v0.20250807.0 (#95) - (1cd44b4) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.2.0 (#94) - (19f14c2) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.1.4 (#93) - (b9e3f37) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.1.3 (#92) - (1d7a517) - renovate[bot]
+- **(deps)** update dependency bazel_skylib to v1.8.1 (#91) - (e9ca74c) - renovate[bot]
+- **(deps)** update dependency boringssl to v0.20250701.0 (#90) - (3fb95df) - renovate[bot]
+- **(deps)** update dependency bazel_skylib to v1.8.0 (#89) - (eebbdaa) - renovate[bot]
+- **(deps)** update dependency abseil-cpp to v20250512.1 (#88) - (491f3cb) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.1.2 (#87) - (7ff25fa) - renovate[bot]
+- **(deps)** update dependency boringssl to v0.20250514.0 (#86) - (af16ccb) - renovate[bot]
+- **(deps)** update dependency abseil-cpp to v20250512 (#85) - (e3d8e81) - renovate[bot]
+- **(deps)** update dependency nlohmann_json to v3.12.0 (#84) - (2c767ff) - renovate[bot]
+- **(deps)** update dependency boringssl to v0.20250415.0 (#83) - (1cae7c1) - renovate[bot]
+- **(deps)** update dependency toolchains_llvm to v1.4.0 (#82) - (3dd61ea) - renovate[bot]
+- **(deps)** update dependency bazel to v7.6.1 (#81) - (ae2671c) - renovate[bot]
+- **(deps)** update dependency bazel to v7.6.0 (#80) - (9155d0c) - renovate[bot]
+- **(deps)** update jidicula/clang-format-action action to v4.15.0 (#79) - (1bb2516) - renovate[bot]
+- **(deps)** update dependency abseil-cpp to v20250127.1 (#78) - (6e65a96) - renovate[bot]
+- **(deps)** update dependency boringssl to v0.20250311.0 (#77) - (be8bbf8) - renovate[bot]
+- line endings - (05a2ef9) - Ezekiel Warren
+- stop using deprecated bazelboost registry (#103) - (4fbdd88) - Ezekiel Warren
+
+- - -
+
 ## 0.2.5 - 2025-02-17
 #### Bug Fixes
 - crash with EVP_MD_CTX_free - (75a07b9) - Ezekiel Warren
