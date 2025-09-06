@@ -71,10 +71,6 @@ static auto guess_strip_prefix(bzlreg::tar_view tar_view) -> std::string {
 	for(bzlreg::tar_view_file f : tar_view) {
 		auto name = f.name();
 
-		if(name == "pax_global_header") {
-			continue;
-		}
-
 		auto slash_idx = name.find("/");
 		if(slash_idx == std::string::npos) {
 			return "";
