@@ -4,15 +4,21 @@
 #include <cstddef>
 #include <string_view>
 #include <string>
+#include <array>
 
 namespace bzlreg {
 class tar_view;
 
 class tar_view_file {
 	friend tar_view;
-	std::span<std::byte> _data;
+	std::span<std::byte>       _data;
+	std::span<const std::byte> _extended_header_path = {};
+	std::span<const std::byte> _extended_header_linkpath = {};
+	std::span<const std::byte> _extended_header_size = {};
 
 	tar_view_file(std::span<std::byte> data) noexcept;
+
+	auto header_byte_size() const -> size_t;
 
 public:
 	tar_view_file();
