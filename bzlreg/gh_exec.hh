@@ -11,4 +11,7 @@ auto gh_default_branch(std::string org, std::string repo)
 
 auto gh_branch_commit_sha(std::string org, std::string repo, std::string branch)
 	-> std::optional<std::string>;
+
+auto gh_commit_date(std::string org, std::string repo, std::string commit)
+	-> std::optional<std::string>;
 } // namespace bzlreg

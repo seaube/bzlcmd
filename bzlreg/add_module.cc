@@ -5,6 +5,7 @@
 #include <iostream>
 #include <format>
 #include <fstream>
+#include <chrono>
 #include <boost/url.hpp>
 #include <openssl/evp.h>
 #include "nlohmann/json.hpp"
@@ -22,11 +23,37 @@ namespace fs = std::filesystem;
 using bzlreg::util::defer;
 using json = nlohmann::json;
 
+constexpr auto DEFAULT_MODULE_BAZEL = R"starlark(module(
+    name = "{}",
+    version = "{}",
+)
+)starlark";
+
+constexpr auto GIT_COMMIT_DEFALT_MODULE_BAZEL = R"starlark(module(
+    name = "{}",
+    # version determined by git commit author date
+    # commit: {}
+    version = "{}",
+)
+)starlark";
+
+struct github_url_info {
+	std::string org = {};
+	std::string repo = {};
+	std::string default_branch = {};
+	std::string default_branch_commit = {};
+};
+
+struct resolve_archive_url_result {
+	boost::urls::url url = {};
+	github_url_info  github = {};
+};
+
 static auto is_valid_archive_url(std::string_view url) -> bool {
 	return url.starts_with("https://") || url.starts_with("http://");
 }
 
-auto infer_repository_from_url( //
+static auto infer_repository_from_url( //
 	boost::url url
 ) -> std::optional<std::string> {
 	if(url.host_name() == "github.com") {
@@ -52,10 +79,43 @@ static auto infer_module_name( //
 	return "";
 }
 
+static auto commit_date_to_version_string(std::string commit_date)
+	-> std::string {
+	if(!commit_date.empty() && commit_date.back() == 'Z') {
+		commit_date.pop_back();
+	}
+
+	auto iss = std::istringstream{commit_date};
+	auto tp = std::chrono::system_clock::time_point{};
+	iss >> std::chrono::parse("%FT%T", tp);
+	if(iss.fail()) {
+		std::cerr << "ERROR: failed to stringify parsed chrono date\n";
+		std::exit(1);
+	}
+
+	return std::format("{:%Y%m%d}.0", tp);
+}
+
 static auto infer_module_version( //
+	const resolve_archive_url_result& archive_url_result,
 	bzlreg::tar_view tar_view,
 	std::string_view strip_prefix
 ) -> std::string {
+	if(!archive_url_result.github.default_branch_commit.empty()) {
+		auto commit_date = bzlreg::gh_commit_date(
+			archive_url_result.github.org,
+			archive_url_result.github.repo,
+			archive_url_result.github.default_branch_commit
+		);
+
+		if(!commit_date) {
+			std::cerr << "ERROR: failed to get commit date\n";
+			std::exit(1);
+		}
+
+		return commit_date_to_version_string(*commit_date);
+	}
+
 	if(!strip_prefix.empty()) {
 		auto dash_idx = strip_prefix.find_last_of('-');
 		if(dash_idx != std::string::npos) {
@@ -90,16 +150,19 @@ static auto guess_strip_prefix(bzlreg::tar_view tar_view) -> std::string {
 	return strip_prefix;
 }
 
-static auto resolve_archive_url(std::string_view url_str) -> boost::urls::url {
-	auto url = boost::urls::url{url_str};
+static auto resolve_archive_url(std::string_view url_str)
+	-> resolve_archive_url_result {
+	auto result = resolve_archive_url_result{};
 
-	if(url.host_name() == "github.com") {
-		auto path = fs::path{url.path().substr(1)};
+	result.url = boost::urls::url{url_str};
+
+	if(result.url.host_name() == "github.com") {
+		auto path = fs::path{result.url.path().substr(1)};
 		auto path_segment_count = std::distance(path.begin(), path.end());
 
 		if(path_segment_count == 2) {
-			auto org = path.begin()->string();
-			auto repo = std::next(path.begin())->string();
+			result.github.org = path.begin()->string();
+			result.github.repo = std::next(path.begin())->string();
 
 			if(!bzlreg::is_gh_available()) {
 				std::cerr << "ERROR: need 'gh' in PATH to get github info - otherwise "
@@ -107,38 +170,48 @@ static auto resolve_archive_url(std::string_view url_str) -> boost::urls::url {
 				std::exit(1);
 			}
 
-			auto default_branch = bzlreg::gh_default_branch(org, repo);
+			auto default_branch =
+				bzlreg::gh_default_branch(result.github.org, result.github.repo);
 			if(!default_branch) {
 				std::cerr << std::format(
-					"ERROR: failed to get default branch from github repo {}/{}\n",
-					org,
-					repo
+					"ERROR: failed to get default branch from github result.github.repo "
+					"{}/{}\n",
+					result.github.org,
+					result.github.repo
 				);
 				std::exit(1);
 			}
 
-			auto head_commit =
-				bzlreg::gh_branch_commit_sha(org, repo, *default_branch);
+			result.github.default_branch = *default_branch;
+
+			auto head_commit = bzlreg::gh_branch_commit_sha(
+				result.github.org,
+				result.github.repo,
+				*default_branch
+			);
 			if(!head_commit) {
 				std::cerr << std::format(
-					"ERROR: failed to commit sha for branch '{}' in github repo {}/{}\n",
+					"ERROR: failed to commit sha for branch '{}' in github "
+					"result.github.repo {}/{}\n",
 					*default_branch,
-					org,
-					repo
+					result.github.org,
+					result.github.repo
 				);
 				std::exit(1);
 			}
 
-			return boost::urls::url{std::format(
+			result.github.default_branch_commit = *head_commit;
+
+			result.url = boost::urls::url{std::format(
 				"https://github.com/{}/{}/archive/{}.tar.gz",
-				org,
-				repo,
+				result.github.org,
+				result.github.repo,
 				*head_commit
 			)};
 		}
 	}
 
-	return url;
+	return result;
 }
 
 auto bzlreg::add_module(add_module_options options) -> int {
@@ -166,8 +239,9 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		return 1;
 	}
 
-	auto archive_url = resolve_archive_url(archive_url_str);
-	auto archive_filename = fs::path{archive_url.path()}.filename().string();
+	auto archive_url_result = resolve_archive_url(archive_url_str);
+	auto archive_filename =
+		fs::path{archive_url_result.url.path()}.filename().string();
 	if(!archive_filename.ends_with(".tar.gz") &&
 		 !archive_filename.ends_with(".tgz")) {
 		std::cerr << std::format(
@@ -177,7 +251,7 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		return 1;
 	}
 
-	archive_url_str = archive_url.c_str();
+	archive_url_str = archive_url_result.url.c_str();
 
 	auto compressed_data = bzlreg::download_file(archive_url_str);
 	if(!compressed_data) {
@@ -214,9 +288,15 @@ auto bzlreg::add_module(add_module_options options) -> int {
 			: std::string{strip_prefix} + "/MODULE.bazel"
 	);
 	if(!module_bzl_view) {
-		std::cerr << "[WARN] no MODULE.bazel file found in archive\n";
 		module_name = infer_module_name(tar_view, strip_prefix);
-		module_version = infer_module_version(tar_view, strip_prefix);
+		module_version =
+			infer_module_version(archive_url_result, tar_view, strip_prefix);
+		std::cerr << "WARN: no MODULE.bazel file found in archive\n";
+		std::cerr << std::format(
+			"WARN: inferred module name and version is {}@{}\n",
+			module_name,
+			module_version
+		);
 	} else {
 		module_bzl = bzlreg::module_bazel::parse(module_bzl_view.string_view());
 
@@ -257,9 +337,9 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	for(auto version : metadata_config.versions) {
 		if(module_version == version) {
 			std::cerr << std::format( //
-				"{} already exists for {}\n",
-				version,
-				module_name
+				"ERROR: {}@{} already exists\n",
+				module_name,
+				version
 			);
 			return 1;
 		}
@@ -271,13 +351,14 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		metadata_config.repository.emplace();
 	}
 	if(metadata_config.repository->empty()) {
-		auto inferred_repository = infer_repository_from_url(archive_url);
+		auto inferred_repository =
+			infer_repository_from_url(archive_url_result.url);
 		if(inferred_repository) {
 			metadata_config.repository->emplace_back(*inferred_repository);
 		} else {
 			std::cerr << std::format( //
-				"[WARN] Unable to infer repository string from {}\n"
-				"       Please add to {} manually\n",
+				"WARN: Unable to infer repository string from {}\n"
+				"      Please add to {} manually\n",
 				archive_url_str,
 				metadata_config_path.generic_string()
 			);
@@ -286,14 +367,14 @@ auto bzlreg::add_module(add_module_options options) -> int {
 
 	if(metadata_config.maintainers.empty()) {
 		std::cerr << std::format( //
-			"[WARN] 'maintainers' list is empty in {}\n",
+			"WARN: 'maintainers' list is empty in {}\n",
 			metadata_config_path.generic_string()
 		);
 	}
 
 	if(metadata_config.homepage.empty()) {
 		std::cerr << std::format( //
-			"[WARN] 'homepage' is empty in {}\n",
+			"WARN: 'homepage' is empty in {}\n",
 			metadata_config_path.generic_string()
 		);
 	}
@@ -302,7 +383,16 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	std::ofstream{source_config_path} << json{source_config}[0].dump(4);
 	if(module_bzl_view) {
 		std::ofstream{module_bazel_path} << module_bzl_view.string_view();
+	} else if(!archive_url_result.github.default_branch_commit.empty()) {
+		std::ofstream{module_bazel_path} << std::format(
+			GIT_COMMIT_DEFALT_MODULE_BAZEL,
+			module_name,
+			archive_url_result.github.default_branch_commit,
+			module_version
+		);
 	} else {
+		std::ofstream{module_bazel_path}
+			<< std::format(DEFAULT_MODULE_BAZEL, module_name, module_version);
 	}
 
 	return 0;
