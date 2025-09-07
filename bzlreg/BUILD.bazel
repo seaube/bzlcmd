@@ -24,6 +24,16 @@ cc_library(
 )
 
 cc_library(
+    name = "gh_exec",
+    srcs = ["gh_exec.cc"],
+    hdrs = ["gh_exec.hh"],
+    copts = copts,
+    deps = [
+        "@boost.process",
+    ],
+)
+
+cc_library(
     name = "init_registry",
     srcs = ["init_registry.cc"],
     hdrs = ["init_registry.hh"],
@@ -43,6 +53,7 @@ cc_library(
         ":decompress",
         ":defer",
         ":download",
+        ":gh_exec",
         ":module_bazel",
         ":tar_view",
         ":util",
