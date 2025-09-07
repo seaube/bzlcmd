@@ -16,6 +16,7 @@
 #include "bzlreg/config_types.hh"
 #include "bzlreg/module_bazel.hh"
 #include "bzlreg/util.hh"
+#include "bzlreg/gh_exec.hh"
 
 namespace fs = std::filesystem;
 using bzlreg::util::defer;
@@ -89,6 +90,57 @@ static auto guess_strip_prefix(bzlreg::tar_view tar_view) -> std::string {
 	return strip_prefix;
 }
 
+static auto resolve_archive_url(std::string_view url_str) -> boost::urls::url {
+	auto url = boost::urls::url{url_str};
+
+	if(url.host_name() == "github.com") {
+		auto path = fs::path{url.path().substr(1)};
+		auto path_segment_count = std::distance(path.begin(), path.end());
+
+		if(path_segment_count == 2) {
+			auto org = path.begin()->string();
+			auto repo = std::next(path.begin())->string();
+
+			if(!bzlreg::is_gh_available()) {
+				std::cerr << "ERROR: need 'gh' in PATH to get github info - otherwise "
+										 "give full archive url\n";
+				std::exit(1);
+			}
+
+			auto default_branch = bzlreg::gh_default_branch(org, repo);
+			if(!default_branch) {
+				std::cerr << std::format(
+					"ERROR: failed to get default branch from github repo {}/{}\n",
+					org,
+					repo
+				);
+				std::exit(1);
+			}
+
+			auto head_commit =
+				bzlreg::gh_branch_commit_sha(org, repo, *default_branch);
+			if(!head_commit) {
+				std::cerr << std::format(
+					"ERROR: failed to commit sha for branch '{}' in github repo {}/{}\n",
+					*default_branch,
+					org,
+					repo
+				);
+				std::exit(1);
+			}
+
+			return boost::urls::url{std::format(
+				"https://github.com/{}/{}/archive/{}.tar.gz",
+				org,
+				repo,
+				*head_commit
+			)};
+		}
+	}
+
+	return url;
+}
+
 auto bzlreg::add_module(add_module_options options) -> int {
 	auto registry_dir = options.registry_dir;
 	auto archive_url_str = options.archive_url;
@@ -114,7 +166,7 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		return 1;
 	}
 
-	auto archive_url = boost::urls::url{archive_url_str};
+	auto archive_url = resolve_archive_url(archive_url_str);
 	auto archive_filename = fs::path{archive_url.path()}.filename().string();
 	if(!archive_filename.ends_with(".tar.gz") &&
 		 !archive_filename.ends_with(".tgz")) {
@@ -125,9 +177,11 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		return 1;
 	}
 
+	archive_url_str = archive_url.c_str();
+
 	auto compressed_data = bzlreg::download_file(archive_url_str);
 	if(!compressed_data) {
-		std::cerr << std::format("Failed to download {}\n", archive_url_str);
+		std::cerr << std::format("ERROR: failed to download {}\n", archive_url_str);
 		return 1;
 	}
 
@@ -135,13 +189,13 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		std::as_bytes(std::span{compressed_data->data(), compressed_data->size()})
 	);
 	if(!integrity) {
-		std::cerr << "Failed to calculate integrity\n";
+		std::cerr << "ERROR: failed to calculate integrity\n";
 		return 1;
 	}
 
 	auto decompressed_data = bzlreg::decompress_archive(*compressed_data);
 	if(decompressed_data.empty()) {
-		std::cerr << "Failed to decompress archive data\n";
+		std::cerr << "ERROR: failed to decompress archive data\n";
 		return 1;
 	}
 
@@ -167,7 +221,7 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		module_bzl = bzlreg::module_bazel::parse(module_bzl_view.string_view());
 
 		if(!module_bzl) {
-			std::cerr << "Failed to parse MODULE.bazel\n";
+			std::cerr << "ERROR: failed to parse MODULE.bazel\n";
 			return 1;
 		}
 
