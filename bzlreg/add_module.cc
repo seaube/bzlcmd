@@ -179,19 +179,26 @@ auto bzlreg::add_module(add_module_options options) -> int {
 
 	archive_url_str = archive_url.c_str();
 
+	std::cout << "INFO: downloading " << archive_url_str << "...";
 	auto compressed_data = bzlreg::download_file(archive_url_str);
 	if(!compressed_data) {
+		std::cout << "\b\b\b: FAILED\n";
 		std::cerr << std::format("ERROR: failed to download {}\n", archive_url_str);
 		return 1;
 	}
+	std::cout << "\b\b\b: size=" << compressed_data->size() << "\n";
 
+	std::cout << "INFO: integrity...";
 	auto integrity = bzlreg::calc_integrity(
 		std::as_bytes(std::span{compressed_data->data(), compressed_data->size()})
 	);
 	if(!integrity) {
+		std::cout << "\b\b\b   \n";
 		std::cerr << "ERROR: failed to calculate integrity\n";
 		return 1;
 	}
+
+	std::cout << "\b\b\b: " << *integrity << "\n";
 
 	auto decompressed_data = bzlreg::decompress_archive(*compressed_data);
 	if(decompressed_data.empty()) {
@@ -205,7 +212,9 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	auto tar_view = bzlreg::tar_view{decompressed_data};
 
 	if(strip_prefix.empty()) {
+		std::cout << "INFO: guessing strip prefix...";
 		strip_prefix = guess_strip_prefix(tar_view);
+		std::cout << "\b\b\b: " << strip_prefix << "\n";
 	}
 
 	auto module_bzl_view = tar_view.file(
