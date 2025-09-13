@@ -18,6 +18,10 @@ class tar_view_file {
 
 	tar_view_file(std::span<std::byte> data) noexcept;
 
+	/**
+	 * As small as 1 tar header (512 bytes) and as large as 1 tar header + PAX
+	 * header + the following tar header.
+	 */
 	auto header_byte_size() const -> size_t;
 
 public:

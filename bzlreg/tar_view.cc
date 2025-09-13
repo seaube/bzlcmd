@@ -140,14 +140,21 @@ auto bzlreg::tar_view::iterator::operator++() -> iterator& {
 	assert(!_data.empty());
 	auto file_size = operator*().size();
 	auto header_size = operator*().header_byte_size();
-	_data = _data.subspan(header_size + round_up_to_multiple(file_size, 512));
-	if(is_all0(_data.subspan(0, TAR_HEADER_SIZE))) {
-		_data = _data.subspan(TAR_HEADER_SIZE);
+	auto file_size_rounded = round_up_to_multiple(file_size, 512);
 
+	if(header_size + file_size_rounded < _data.size()) {
+		_data = _data.subspan(header_size + file_size_rounded);
 		if(is_all0(_data.subspan(0, TAR_HEADER_SIZE))) {
-			_data = {};
+			_data = _data.subspan(TAR_HEADER_SIZE);
+
+			if(is_all0(_data.subspan(0, TAR_HEADER_SIZE))) {
+				_data = {};
+			}
 		}
+	} else {
+		_data = {};
 	}
+
 	return *this;
 }
 
@@ -236,12 +243,12 @@ bzlreg::tar_view_file::tar_view_file( //
 			}
 
 			auto key = extended_header.substr(
-				length_sep_index,
-				key_value_sep_index - length_sep_index
+				length_sep_index + 1,
+				key_value_sep_index - length_sep_index - 1
 			);
 			auto value = extended_header.substr(
-				key_value_sep_index,
-				length - (length_sep_index - key.size() - 2)
+				key_value_sep_index + 1,
+				length - key_value_sep_index - 2
 			);
 
 			auto value_span = std::span{
@@ -256,6 +263,8 @@ bzlreg::tar_view_file::tar_view_file( //
 			} else if(key == "size") {
 				_extended_header_size = value_span;
 			}
+
+			extended_header = extended_header.substr(length);
 		}
 	}
 }
@@ -274,7 +283,8 @@ auto bzlreg::tar_view_file::header_byte_size() const -> size_t {
 
 	if(typeflag == typeflag_enum::extended_header) {
 		return TAR_HEADER_SIZE +
-			round_up_to_multiple(get_tar_header_file_size(_data), 512);
+			round_up_to_multiple(get_tar_header_file_size(_data), 512) +
+			TAR_HEADER_SIZE;
 	} else {
 		return TAR_HEADER_SIZE;
 	}
@@ -325,25 +335,44 @@ auto bzlreg::tar_view_file::size() const noexcept -> size_t {
 	assert(*this);
 
 	const auto typeflag = get_typeflag(_data);
+	auto       file_size = std::size_t{};
 
 	if(typeflag == typeflag_enum::extended_header) {
-		auto file_size = std::size_t{};
-		auto [_, ec] = std::from_chars(
-			reinterpret_cast<const char*>(_extended_header_size.data()),
-			reinterpret_cast<const char*>(_extended_header_size.data()) +
-				_extended_header_size.size(),
-			file_size
-		);
-		if(ec != std::errc{}) {
-			std::cerr << "ERROR: extended header file size: "
-								<< std::make_error_code(ec).message() << std::endl;
-			std::abort();
+		if(!_extended_header_size.empty()) {
+			auto [_, ec] = std::from_chars(
+				reinterpret_cast<const char*>(_extended_header_size.data()),
+				reinterpret_cast<const char*>(_extended_header_size.data()) +
+					_extended_header_size.size(),
+				file_size
+			);
+			if(ec != std::errc{}) {
+				std::cerr << "ERROR: extended header file size: "
+									<< std::make_error_code(ec).message() << std::endl;
+				std::abort();
+			}
+		} else {
+			auto next_entry = _data.subspan(
+				TAR_HEADER_SIZE +
+				round_up_to_multiple(get_tar_header_file_size(_data), 512)
+			);
+			auto next_typeflag = get_typeflag(next_entry);
+			switch(next_typeflag) {
+				case typeflag_enum::extended_header:
+				case typeflag_enum::global_extended_header:
+					std::cerr << "ERROR: unexpected typeflag: "
+										<< static_cast<char>(next_typeflag) << "\n";
+					std::abort();
+					break;
+				default:
+					break;
+			}
+			file_size = get_tar_header_file_size(next_entry);
 		}
-
-		return file_size;
 	} else {
-		return get_tar_header_file_size(_data);
+		file_size = get_tar_header_file_size(_data);
 	}
+
+	return file_size;
 }
 
 auto bzlreg::tar_view_file::contents() const noexcept -> std::span<std::byte> {
