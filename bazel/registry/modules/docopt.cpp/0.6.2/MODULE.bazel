@@ -4,4 +4,4 @@ module(
 )
 
 bazel_dep(name = "rules_cc", version = "0.2.5")
-bazel_dep(name = "boost.regex", version = "1.87.0")
+bazel_dep(name = "boost.regex", version = "1.90.0.bcr.1")
