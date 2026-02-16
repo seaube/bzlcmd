@@ -1,5 +1,0 @@
-alias(
-    name = "bzlreg",
-    visibility = ["//visibility:public"],
-    actual = "//bzlreg:bzlreg",
-)

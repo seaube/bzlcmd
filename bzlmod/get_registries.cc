@@ -119,11 +119,16 @@ static auto parse_bazelrc_recursive(
 		result.imports.end()
 	);
 
-	out_result.registries.insert(
-		out_result.registries.end(),
-		result.registries.begin(),
-		result.registries.end()
-	);
+	for(auto reg : result.registries) {
+		auto reg_path = std::string{reg};
+		absl::StrReplaceAll(
+			{
+				{"%workspace%", workspace_dir.generic_string()},
+			},
+			&reg_path
+		);
+		out_result.registries.emplace_back(reg_path);
+	}
 }
 
 static auto get_default_bazelrc_paths( //
