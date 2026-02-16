@@ -35,10 +35,3 @@ register_toolchains(
     "@llvm_toolchain//:all",
     dev_dependency = True,
 )
-
-single_version_override(
-    module_name = "docopt.cpp",
-    version = "0.6.2",
-    patches = ["//:patches/docopt.cpp+0.6.2.patch"],
-    patch_strip = 1,
-)
