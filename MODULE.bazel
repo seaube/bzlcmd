@@ -16,7 +16,7 @@ bazel_dep(name = "boost.url", version = "1.87.0")
 bazel_dep(name = "boost.regex", version = "1.87.0")
 bazel_dep(name = "libdeflate", version = "1.19")
 bazel_dep(name = "abseil-cpp", version = "20250814.0")
-bazel_dep(name = "boringssl", version = "0.20250818.0")
+bazel_dep(name = "boringssl", version = "0.20260211.0")
 bazel_dep(name = "docopt.cpp", version = "0.6.2")
 
 git_override(
