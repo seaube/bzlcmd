@@ -69,6 +69,27 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "patch_module",
+    srcs = ["patch_module.cc"],
+    hdrs = ["patch_module.hh"],
+    copts = copts,
+    deps = [
+        ":download_module_metadata",
+        ":find_workspace_dir",
+        ":get_registries",
+        "//bzlreg:config_types",
+        "//bzlreg:decompress",
+        "//bzlreg:defer",
+        "//bzlreg:download",
+        "//bzlreg:tar_view",
+        "//bzlreg:unused",
+        "@boost.filesystem",
+        "@boost.process",
+        "@nlohmann_json//:json",
+    ],
+)
+
 cc_binary(
     name = "bzlmod",
     srcs = ["bzlmod.cc"],
@@ -76,6 +97,7 @@ cc_binary(
     deps = [
         ":add_module",
         ":init_module",
+        ":patch_module",
         ":update_module",
         "@docopt.cpp//:docopt",
     ],

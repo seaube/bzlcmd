@@ -3,6 +3,7 @@
 #include "bzlmod/init_module.hh"
 #include "bzlmod/add_module.hh"
 #include "bzlmod/update_module.hh"
+#include "bzlmod/patch_module.hh"
 
 namespace fs = std::filesystem;
 
@@ -13,6 +14,7 @@ Usage:
 	bzlmod init [<module-dir>]
 	bzlmod add <dep-name>
 	bzlmod update
+	bzlmod patch <module-name>
 )docopt";
 
 auto main(int argc, char* argv[]) -> int {
@@ -35,6 +37,9 @@ auto main(int argc, char* argv[]) -> int {
 		exit_code = bzlmod::add_module(dep_name);
 	} else if(args["update"].asBool()) {
 		exit_code = bzlmod::update_module();
+	} else if(args["patch"].asBool()) {
+		auto dep_name = args["<module-name>"].asString();
+		exit_code = bzlmod::patch_module(dep_name);
 	}
 
 	return exit_code;
