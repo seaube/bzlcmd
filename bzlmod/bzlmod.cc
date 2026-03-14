@@ -3,6 +3,7 @@
 #include "bzlmod/init_module.hh"
 #include "bzlmod/add_module.hh"
 #include "bzlmod/update_module.hh"
+#include "bzlmod/git_override.hh"
 
 namespace fs = std::filesystem;
 
@@ -13,6 +14,7 @@ Usage:
 	bzlmod init [<module-dir>]
 	bzlmod add <dep-name>
 	bzlmod update
+	bzlmod git-override <dep-name> [<committish>]
 )docopt";
 
 auto main(int argc, char* argv[]) -> int {
@@ -22,7 +24,7 @@ auto main(int argc, char* argv[]) -> int {
 	}
 
 	auto args = docopt::docopt(USAGE, {argv + 1, argv + argc});
-	auto exit_code = int{0};
+	auto exit_code = 0;
 
 	if(args["init"].asBool()) {
 		auto module_dir = args["<module-dir>"] //
@@ -35,6 +37,11 @@ auto main(int argc, char* argv[]) -> int {
 		exit_code = bzlmod::add_module(dep_name);
 	} else if(args["update"].asBool()) {
 		exit_code = bzlmod::update_module();
+	} else if(args["git-override"].asBool()) {
+		exit_code = bzlmod::git_override({
+			.dep = args["<dep-name>"].asString(),
+			.committish = args["<committish>"].asString(),
+		});
 	}
 
 	return exit_code;
