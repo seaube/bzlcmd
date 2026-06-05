@@ -3,11 +3,7 @@ module(
     version = "0.2.6",
 )
 
-bazel_dep(name = "llvm", version = "0.0.0", dev_dependency = True)
-local_path_override(
-    module_name = "llvm",
-    path = "../../hermetic-llvm",
-)
+bazel_dep(name = "llvm", version = "0.8.5", dev_dependency = True)
 bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
 
 bazel_dep(name = "rules_cc", version = "0.2.19")
