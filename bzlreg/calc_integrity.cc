@@ -1,6 +1,6 @@
 #include "bzlreg/calc_integrity.hh"
 
-#include <iostream>
+#include <print>
 #include <filesystem>
 #include <fstream>
 #include "nlohmann/json.hpp"
@@ -14,8 +14,9 @@ auto bzlreg::calc_integrity( //
 	const calc_integrity_options& options
 ) -> int {
 	if(!fs::exists(options.registry_dir / "bazel_registry.json")) {
-		std::cerr << std::format(
-			"bazel_registry.json file is missing. Are sure {} is a bazel registry?\n",
+		std::println(
+			stderr,
+			"bazel_registry.json file is missing. Are sure {} is a bazel registry?",
 			options.registry_dir.generic_string()
 		);
 		return 1;
@@ -25,8 +26,9 @@ auto bzlreg::calc_integrity( //
 	auto metadata_config_path = module_dir / "metadata.json";
 
 	if(!fs::exists(metadata_config_path)) {
-		std::cerr << std::format( //
-			"[ERROR] {} does not exist\n",
+		std::println( //
+			stderr,
+			"[ERROR] {} does not exist",
 			metadata_config_path.generic_string()
 		);
 		return 1;

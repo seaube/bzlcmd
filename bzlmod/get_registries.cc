@@ -2,7 +2,7 @@
 
 #include <string>
 #include <fstream>
-#include <iostream>
+#include <print>
 #include "absl/strings/str_split.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_replace.h"
@@ -90,7 +90,7 @@ static auto parse_bazelrc_recursive(
 	auto already_has_import = [&](auto imp) -> bool {
 		for(auto existing_imp : out_result.imports) {
 			if(imp == existing_imp) {
-				std::cerr << "Already has import " << imp << "\n";
+				std::println(stderr, "Already has import {}", imp);
 				return true;
 			}
 		}

@@ -1,11 +1,11 @@
 #include "bzlmod/add_module.hh"
 
 #include <filesystem>
-#include <iostream>
+#include <print>
 #include <algorithm>
 #include <execution>
-#include <format>
-#include <boost/process.hpp>
+#define BOOST_PROCESS_VERSION 1
+#include <boost/process/v1.hpp>
 #include "bzlmod/get_registries.hh"
 #include "bzlmod/find_workspace_dir.hh"
 #include "bzlmod/download_module_metadata.hh"
@@ -23,7 +23,8 @@ auto bzlmod::add_module( //
 ) -> int {
 	auto buildozer = bp::search_path("buildozer");
 	if(buildozer.empty()) {
-		std::cerr << std::format(
+		std::print(
+			stderr,
 			"[ERROR] `buildozer` is required to use `bzlmod add`. Please make sure "
 			"it's in your PATH. Buildozer may be downloaded here:\n"
 			"        https://github.com/bazelbuild/buildtools/releases\n\n"
@@ -34,7 +35,8 @@ auto bzlmod::add_module( //
 	auto workspace_dir = find_workspace_dir(fs::current_path());
 
 	if(!workspace_dir) {
-		std::cerr << std::format(
+		std::print(
+			stderr,
 			"[ERROR] Cannot find bazel workspace from {}."
 			"        Did you mean `bzlmod init`?\n",
 			fs::current_path().generic_string()
@@ -45,7 +47,7 @@ auto bzlmod::add_module( //
 	auto registries = get_registries(*workspace_dir);
 
 	if(!registries) {
-		std::cerr << "[ERROR] Unable to read .bazelrc file(s)\n";
+		std::println(stderr, "[ERROR] Unable to read .bazelrc file(s)");
 		return 1;
 	}
 
@@ -85,9 +87,9 @@ auto bzlmod::add_module( //
 	}
 
 	if(!dep_version) {
-		std::cerr << "Failed to find " << dep_name << " in:\n";
+		std::println(stderr, "Failed to find {} in:", dep_name);
 		for(auto& entry : registry_resolve_entries) {
-			std::cerr << "\t" << entry.registry << "\n";
+			std::println(stderr, "\t{}", entry.registry);
 		}
 		return 1;
 	}
@@ -119,20 +121,21 @@ auto bzlmod::add_module( //
 	auto buildozer_exit_code = buildozer_proc.exit_code();
 
 	if(buildozer_exit_code == 0) {
-		std::cout << std::format( //
-			"{}@{} added\n",
+		std::println( //
+			"{}@{} added",
 			dep_name,
 			*dep_version
 		);
 	} else if(buildozer_exit_code == 3) {
-		std::cout << std::format( //
-			"{}@{} already added\n",
+		std::println( //
+			"{}@{} already added",
 			dep_name,
 			*dep_version
 		);
 	} else {
-		std::cerr << std::format( //
-			"buildozer exited with {}\n",
+		std::println( //
+			stderr,
+			"buildozer exited with {}",
 			buildozer_proc.exit_code()
 		);
 		return 1;

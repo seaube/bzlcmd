@@ -1,19 +1,25 @@
 #include <filesystem>
-#include "docopt.h"
+#include <print>
+#include "docoptexpr/docoptexpr.hh"
 #include "bzlmod/init_module.hh"
 #include "bzlmod/add_module.hh"
 #include "bzlmod/update_module.hh"
 
 namespace fs = std::filesystem;
+using namespace docoptexpr::literals;
 
-constexpr auto USAGE = R"docopt(
+constexpr auto USAGE = R"(
 Bzlmod - manage your bazel module with _ease_
 
 Usage:
 	bzlmod init [<module-dir>]
 	bzlmod add <dep-name>
 	bzlmod update
-)docopt";
+	bzlmod -h | --help
+
+Options:
+	-h --help  Show this screen.
+)"_docopt;
 
 auto main(int argc, char* argv[]) -> int {
 	auto bazel_working_dir = std::getenv("BUILD_WORKING_DIRECTORY");
@@ -21,19 +27,32 @@ auto main(int argc, char* argv[]) -> int {
 		fs::current_path(bazel_working_dir);
 	}
 
-	auto args = docopt::docopt(USAGE, {argv + 1, argv + argc});
+	auto res = USAGE.parse(argc, argv);
+	if(!res) {
+		std::println(stderr, "Error matching arguments: {}", res.error());
+		std::println(stderr, "{}", USAGE.usage());
+		return 1;
+	}
+
+	auto args = res.value();
 	auto exit_code = int{0};
 
-	if(args["init"].asBool()) {
-		auto module_dir = args["<module-dir>"] //
-			? fs::path{args.at("<module-dir>").asString()}
+	if(args.get<"--help">()) {
+		std::println("{}", USAGE.help());
+		return 0;
+	}
+
+	if(args.get<"init">()) {
+		auto dir_sv = args.get<"<module-dir>">();
+		auto module_dir = !dir_sv.empty() //
+			? fs::path{dir_sv}
 			: fs::current_path();
 
 		exit_code = bzlmod::init_module(module_dir);
-	} else if(args["add"].asBool()) {
-		auto dep_name = args["<dep-name>"].asString();
+	} else if(args.get<"add">()) {
+		auto dep_name = args.get<"<dep-name>">();
 		exit_code = bzlmod::add_module(dep_name);
-	} else if(args["update"].asBool()) {
+	} else if(args.get<"update">()) {
 		exit_code = bzlmod::update_module();
 	}
 

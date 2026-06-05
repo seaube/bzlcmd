@@ -2,8 +2,8 @@
 
 #include <string_view>
 #include <filesystem>
-#include <iostream>
-#include <format>
+#include <print>
+#include <algorithm>
 #include <fstream>
 #include <chrono>
 #include <boost/url.hpp>
@@ -89,7 +89,7 @@ static auto commit_date_to_version_string(std::string commit_date)
 	auto tp = std::chrono::system_clock::time_point{};
 	iss >> std::chrono::parse("%FT%T", tp);
 	if(iss.fail()) {
-		std::cerr << "ERROR: failed to stringify parsed chrono date\n";
+		std::println(stderr, "ERROR: failed to stringify parsed chrono date");
 		std::exit(1);
 	}
 
@@ -109,7 +109,7 @@ static auto infer_module_version( //
 		);
 
 		if(!commit_date) {
-			std::cerr << "ERROR: failed to get commit date\n";
+			std::println(stderr, "ERROR: failed to get commit date");
 			std::exit(1);
 		}
 
@@ -157,7 +157,7 @@ static auto resolve_archive_url(std::string_view url_str)
 	result.url = boost::urls::url{url_str};
 
 	if(result.url.host_name() == "github.com") {
-		auto path = fs::path{result.url.path().substr(1)};
+		auto path = fs::path{std::string{result.url.path().substr(1)}};
 		auto path_segment_count = std::distance(path.begin(), path.end());
 
 		if(path_segment_count == 2) {
@@ -165,17 +165,21 @@ static auto resolve_archive_url(std::string_view url_str)
 			result.github.repo = std::next(path.begin())->string();
 
 			if(!bzlreg::is_gh_available()) {
-				std::cerr << "ERROR: need 'gh' in PATH to get github info - otherwise "
-										 "give full archive url\n";
+				std::println(
+					stderr,
+					"ERROR: need 'gh' in PATH to get github info - otherwise give full "
+					"archive url"
+				);
 				std::exit(1);
 			}
 
 			auto default_branch =
 				bzlreg::gh_default_branch(result.github.org, result.github.repo);
 			if(!default_branch) {
-				std::cerr << std::format(
+				std::println(
+					stderr,
 					"ERROR: failed to get default branch from github result.github.repo "
-					"{}/{}\n",
+					"{}/{}",
 					result.github.org,
 					result.github.repo
 				);
@@ -190,9 +194,10 @@ static auto resolve_archive_url(std::string_view url_str)
 				*default_branch
 			);
 			if(!head_commit) {
-				std::cerr << std::format(
+				std::println(
+					stderr,
 					"ERROR: failed to commit sha for branch '{}' in github "
-					"result.github.repo {}/{}\n",
+					"result.github.repo {}/{}",
 					*default_branch,
 					result.github.org,
 					result.github.repo
@@ -220,8 +225,9 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	auto strip_prefix = std::string{options.strip_prefix};
 
 	if(!fs::exists(registry_dir / "bazel_registry.json")) {
-		std::cerr << std::format(
-			"bazel_registry.json file is missing. Are sure {} is a bazel registry?\n",
+		std::println(
+			stderr,
+			"bazel_registry.json file is missing. Are sure {} is a bazel registry?",
 			registry_dir.generic_string()
 		);
 		return 1;
@@ -232,8 +238,9 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	fs::create_directories(modules_dir, ec);
 
 	if(!is_valid_archive_url(archive_url_str)) {
-		std::cerr << std::format( //
-			"Invalid archive URL {}\nMust begin with https:// or http://\n",
+		std::println(
+			stderr,
+			"Invalid archive URL {}\nMust begin with https:// or http://",
 			archive_url_str
 		);
 		return 1;
@@ -241,11 +248,14 @@ auto bzlreg::add_module(add_module_options options) -> int {
 
 	auto archive_url_result = resolve_archive_url(archive_url_str);
 	auto archive_filename =
-		fs::path{archive_url_result.url.path()}.filename().string();
-	if(!archive_filename.ends_with(".tar.gz") &&
-		 !archive_filename.ends_with(".tgz")) {
-		std::cerr << std::format(
-			"Archive {} is not supported. Only .tar.gz archives are allowed.\n",
+		fs::path{std::string{archive_url_result.url.path()}}.filename().string();
+	if(
+		!archive_filename.ends_with(".tar.gz") &&
+		!archive_filename.ends_with(".tgz")
+	) {
+		std::println(
+			stderr,
+			"Archive {} is not supported. Only .tar.gz archives are allowed.",
 			archive_filename
 		);
 		return 1;
@@ -253,30 +263,30 @@ auto bzlreg::add_module(add_module_options options) -> int {
 
 	archive_url_str = archive_url_result.url.c_str();
 
-	std::cout << "INFO: downloading " << archive_url_str << "...";
+	std::print("INFO: downloading {}...", archive_url_str);
 	auto compressed_data = bzlreg::download_file(archive_url_str);
 	if(!compressed_data) {
-		std::cout << "\b\b\b: FAILED\n";
-		std::cerr << std::format("ERROR: failed to download {}\n", archive_url_str);
+		std::println("\b\b\b: FAILED");
+		std::println(stderr, "ERROR: failed to download {}", archive_url_str);
 		return 1;
 	}
-	std::cout << "\b\b\b: size=" << compressed_data->size() << "\n";
+	std::println("\b\b\b: size={}", compressed_data->size());
 
-	std::cout << "INFO: integrity...";
+	std::print("INFO: integrity...");
 	auto integrity = bzlreg::calc_integrity(
 		std::as_bytes(std::span{compressed_data->data(), compressed_data->size()})
 	);
 	if(!integrity) {
-		std::cout << "\b\b\b   \n";
-		std::cerr << "ERROR: failed to calculate integrity\n";
+		std::println("\b\b\b   ");
+		std::println(stderr, "ERROR: failed to calculate integrity");
 		return 1;
 	}
 
-	std::cout << "\b\b\b: " << *integrity << "\n";
+	std::println("\b\b\b: {}", *integrity);
 
 	auto decompressed_data = bzlreg::decompress_archive(*compressed_data);
 	if(decompressed_data.empty()) {
-		std::cerr << "ERROR: failed to decompress archive data\n";
+		std::println(stderr, "ERROR: failed to decompress archive data");
 		return 1;
 	}
 
@@ -286,9 +296,9 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	auto tar_view = bzlreg::tar_view{decompressed_data};
 
 	if(strip_prefix.empty()) {
-		std::cout << "INFO: guessing strip prefix...";
+		std::print("INFO: guessing strip prefix...");
 		strip_prefix = guess_strip_prefix(tar_view);
-		std::cout << "\b\b\b: " << strip_prefix << "\n";
+		std::println("\b\b\b: {}", strip_prefix);
 	}
 
 	auto module_bzl_view = tar_view.file(
@@ -300,9 +310,10 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		module_name = infer_module_name(tar_view, strip_prefix);
 		module_version =
 			infer_module_version(archive_url_result, tar_view, strip_prefix);
-		std::cerr << "WARN: no MODULE.bazel file found in archive\n";
-		std::cerr << std::format(
-			"WARN: inferred module name and version is {}@{}\n",
+		std::println(stderr, "WARN: no MODULE.bazel file found in archive");
+		std::println(
+			stderr,
+			"WARN: inferred module name and version is {}@{}",
 			module_name,
 			module_version
 		);
@@ -310,7 +321,7 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		module_bzl = bzlreg::module_bazel::parse(module_bzl_view.string_view());
 
 		if(!module_bzl) {
-			std::cerr << "ERROR: failed to parse MODULE.bazel\n";
+			std::println(stderr, "ERROR: failed to parse MODULE.bazel");
 			return 1;
 		}
 
@@ -327,7 +338,7 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	};
 
 	if(module_name.empty() || module_version.empty()) {
-		std::cerr << "Couldn't decide on module name or version\n";
+		std::println(stderr, "Couldn't decide on module name or version");
 		return 1;
 	}
 
@@ -345,8 +356,9 @@ auto bzlreg::add_module(add_module_options options) -> int {
 
 	for(auto version : metadata_config.versions) {
 		if(module_version == version) {
-			std::cerr << std::format( //
-				"ERROR: {}@{} already exists\n",
+			std::println( //
+				stderr,
+				"ERROR: {}@{} already exists",
 				module_name,
 				version
 			);
@@ -365,9 +377,10 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		if(inferred_repository) {
 			metadata_config.repository->emplace_back(*inferred_repository);
 		} else {
-			std::cerr << std::format( //
+			std::println( //
+				stderr,
 				"WARN: Unable to infer repository string from {}\n"
-				"      Please add to {} manually\n",
+				"      Please add to {} manually",
 				archive_url_str,
 				metadata_config_path.generic_string()
 			);
@@ -375,15 +388,17 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	}
 
 	if(metadata_config.maintainers.empty()) {
-		std::cerr << std::format( //
-			"WARN: 'maintainers' list is empty in {}\n",
+		std::println( //
+			stderr,
+			"WARN: 'maintainers' list is empty in {}",
 			metadata_config_path.generic_string()
 		);
 	}
 
 	if(metadata_config.homepage.empty()) {
-		std::cerr << std::format( //
-			"WARN: 'homepage' is empty in {}\n",
+		std::println( //
+			stderr,
+			"WARN: 'homepage' is empty in {}",
 			metadata_config_path.generic_string()
 		);
 	}

@@ -1,28 +1,31 @@
 module(
     name = "bzlcmd",
     version = "0.2.6",
-    compatibility_level = 1,
 )
 
-bazel_dep(name = "toolchains_llvm", version = "1.5.0", dev_dependency = True)
+bazel_dep(name = "toolchains_llvm", version = "1.7.0", dev_dependency = True)
 bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
 
-bazel_dep(name = "rules_cc", version = "0.2.5")
-bazel_dep(name = "bazel_skylib", version = "1.8.1")
-bazel_dep(name = "nlohmann_json", version = "3.12.0")
-bazel_dep(name = "boost.process", version = "1.87.0")
-bazel_dep(name = "boost.asio", version = "1.87.0.bcr.1")
-bazel_dep(name = "boost.url", version = "1.87.0")
-bazel_dep(name = "boost.regex", version = "1.87.0")
+bazel_dep(name = "rules_cc", version = "0.2.19")
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
+bazel_dep(name = "nlohmann_json", version = "3.12.0.bcr.1")
+bazel_dep(name = "boost.process", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.asio", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.url", version = "1.90.0.bcr.1")
 bazel_dep(name = "libdeflate", version = "1.19")
-bazel_dep(name = "abseil-cpp", version = "20250814.0")
-bazel_dep(name = "boringssl", version = "0.20250818.0")
-bazel_dep(name = "docopt.cpp", version = "0.6.2")
+bazel_dep(name = "abseil-cpp", version = "20260526.0")
+bazel_dep(name = "boringssl", version = "0.20260526.0")
+bazel_dep(name = "docoptexpr", version = "0.1.0")
+git_override(
+    module_name = "docoptexpr",
+    commit = "2998cc8d58b10986f7d3123b6e0396e1775b682c",
+    remote = "https://github.com/zaucy/docoptexpr.git",
+)
 
 git_override(
     module_name = "hedron_compile_commands",
-    commit = "204aa593e002cbd177d30f11f54cff3559110bb9",
-    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
+    commit = "fc76d0bd6a57447ca14eebb2e7009666ed915ece",
+    remote = "https://github.com/zaucy/bazel-compile-commands-extractor.git",
 )
 
 llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")

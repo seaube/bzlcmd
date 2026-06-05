@@ -1,9 +1,10 @@
 #include "bzlreg/bazel_exec.hh"
 
-#include <iostream>
+#include <print>
 #include <filesystem>
 #include <fstream>
-#include <boost/process.hpp>
+#define BOOST_PROCESS_VERSION 1
+#include <boost/process/v1.hpp>
 #include "nlohmann/json.hpp"
 #include "bzlreg/defer.hh"
 #include "bzlreg/unused.hh"
@@ -24,7 +25,7 @@ static auto get_module_from_label(std::string_view label) -> std::string_view {
 
 auto bzlreg::bazel_exec(const bazel_exec_options& options) -> int {
 	if(!options.label.starts_with('@')) {
-		std::cerr << "[ERROR] label must start with @\n";
+		std::println(stderr, "[ERROR] label must start with @");
 		return 1;
 	}
 
@@ -37,9 +38,9 @@ auto bzlreg::bazel_exec(const bazel_exec_options& options) -> int {
 
 	if(options.registry_dir) {
 		if(!fs::exists(*options.registry_dir / "bazel_registry.json")) {
-			std::cerr << std::format(
-				"bazel_registry.json file is missing. Are sure {} is a bazel "
-				"registry?\n",
+			std::println(
+				stderr,
+				"bazel_registry.json file is missing. Are sure {} is a bazel registry?",
 				options.registry_dir->generic_string()
 			);
 			return 1;
@@ -49,8 +50,9 @@ auto bzlreg::bazel_exec(const bazel_exec_options& options) -> int {
 		auto metadata_config_path = module_dir / "metadata.json";
 
 		if(!fs::exists(metadata_config_path)) {
-			std::cerr << std::format( //
-				"[ERROR] {} does not exist\n",
+			std::println( //
+				stderr,
+				"[ERROR] {} does not exist",
 				metadata_config_path.generic_string()
 			);
 			return 1;
@@ -94,8 +96,9 @@ auto bzlreg::bazel_exec(const bazel_exec_options& options) -> int {
 		);
 		auto c = bzlmod::download_module_metadata(metadata_url);
 		if(!c) {
-			std::cerr << std::format( //
-				"[ERROR] module '{}' not found in BCR\n",
+			std::println( //
+				stderr,
+				"[ERROR] module '{}' not found in BCR",
 				module_name
 			);
 			return 1;
