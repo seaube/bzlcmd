@@ -5,26 +5,8 @@ on:
     types: [published]
 
 jobs:
-  release-windows:
-    runs-on: windows-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/cache@v4
-        with:
-          path: |
-            /Users/runneradmin/AppData/Local/bazelisk
-            /Users/runneradmin/.cache/bazel-disk-cache
-          key: ${{runner.os}}-bazel-cache
-      - uses: actions/checkout@v5
-      - run: curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-windows-amd64.exe -o .\buildozer.exe
-      - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
-      - run: cp .\bazel-bin\bzlmod\bzlmod.exe .\bzlmod-windows-amd64.exe && cp .\bazel-bin\bzlreg\bzlreg.exe .\bzlreg-windows-amd64.exe 
-      - run: gh release upload ${{ github.event.release.tag_name }} bzlmod-windows-amd64.exe bzlreg-windows-amd64.exe 
-        env:
-          GH_TOKEN: ${{ github.token }}
-
-  release-linux:
+  release:
+    name: Build & Release Binaries (Linux, Windows, macOS)
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -37,8 +19,42 @@ jobs:
             ~/.cache/bazel-disk-cache
           key: ${{runner.os}}-bazel-cache
       - uses: actions/checkout@v5
-      - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
-      - run: cp ./bazel-bin/bzlmod/bzlmod ./bzlmod-linux-amd64 && cp ./bazel-bin/bzlreg/bzlreg ./bzlreg-linux-amd64
-      - run: gh release upload ${{ github.event.release.tag_name }} bzlmod-linux-amd64 bzlreg-linux-amd64
+
+      # 1. Build for Linux
+      - name: Build Linux Binaries
+        run: |
+          bazelisk --bazelrc=.github/ci.bazelrc build //bzlmod //bzlreg --platforms=@llvm//platforms:linux_x86_64
+          cp ./bazel-bin/bzlmod/bzlmod ./bzlmod-linux-amd64
+          cp ./bazel-bin/bzlreg/bzlreg ./bzlreg-linux-amd64
+
+      # 2. Build for Windows
+      - name: Build Windows Binaries
+        run: |
+          bazelisk --bazelrc=.github/ci.bazelrc build //bzlmod //bzlreg --platforms=@llvm//platforms:windows_x86_64
+          cp ./bazel-bin/bzlmod/bzlmod.exe ./bzlmod-windows-amd64.exe
+          cp ./bazel-bin/bzlreg/bzlreg.exe ./bzlreg-windows-amd64.exe
+
+      # 3. Build for macOS (Intel)
+      - name: Build macOS Intel Binaries
+        run: |
+          bazelisk --bazelrc=.github/ci.bazelrc build //bzlmod //bzlreg --platforms=@llvm//platforms:macos_x86_64
+          cp ./bazel-bin/bzlmod/bzlmod ./bzlmod-darwin-amd64
+          cp ./bazel-bin/bzlreg/bzlreg ./bzlreg-darwin-amd64
+
+      # 4. Build for macOS (Apple Silicon)
+      - name: Build macOS Apple Silicon Binaries
+        run: |
+          bazelisk --bazelrc=.github/ci.bazelrc build //bzlmod //bzlreg --platforms=@llvm//platforms:macos_aarch64
+          cp ./bazel-bin/bzlmod/bzlmod ./bzlmod-darwin-arm64
+          cp ./bazel-bin/bzlreg/bzlreg ./bzlreg-darwin-arm64
+
+      # 5. Upload all compiled binaries to the release
+      - name: Upload Release Assets
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} \
+            bzlmod-linux-amd64 bzlreg-linux-amd64 \
+            bzlmod-windows-amd64.exe bzlreg-windows-amd64.exe \
+            bzlmod-darwin-amd64 bzlreg-darwin-amd64 \
+            bzlmod-darwin-arm64 bzlreg-darwin-arm64
         env:
           GH_TOKEN: ${{ github.token }}

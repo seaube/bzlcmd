@@ -81,19 +81,24 @@ static auto infer_module_name( //
 
 static auto commit_date_to_version_string(std::string commit_date)
 	-> std::string {
-	if(!commit_date.empty() && commit_date.back() == 'Z') {
-		commit_date.pop_back();
+	if (commit_date.length() >= 10 &&
+	    std::isdigit(static_cast<unsigned char>(commit_date[0])) &&
+	    std::isdigit(static_cast<unsigned char>(commit_date[1])) &&
+	    std::isdigit(static_cast<unsigned char>(commit_date[2])) &&
+	    std::isdigit(static_cast<unsigned char>(commit_date[3])) &&
+	    commit_date[4] == '-' &&
+	    std::isdigit(static_cast<unsigned char>(commit_date[5])) &&
+	    std::isdigit(static_cast<unsigned char>(commit_date[6])) &&
+	    commit_date[7] == '-' &&
+	    std::isdigit(static_cast<unsigned char>(commit_date[8])) &&
+	    std::isdigit(static_cast<unsigned char>(commit_date[9]))) {
+		return commit_date.substr(0, 4) +
+		       commit_date.substr(5, 2) +
+		       commit_date.substr(8, 2) + ".0";
 	}
 
-	auto iss = std::istringstream{commit_date};
-	auto tp = std::chrono::system_clock::time_point{};
-	iss >> std::chrono::parse("%FT%T", tp);
-	if(iss.fail()) {
-		std::println(stderr, "ERROR: failed to stringify parsed chrono date");
-		std::exit(1);
-	}
-
-	return std::format("{:%Y%m%d}.0", tp);
+	std::println(stderr, "ERROR: failed to parse commit date: {}", commit_date);
+	std::exit(1);
 }
 
 static auto infer_module_version( //

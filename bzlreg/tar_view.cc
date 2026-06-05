@@ -6,6 +6,7 @@
 #include <print>
 #include <cassert>
 #include <charconv>
+#include <system_error>
 
 // https://en.wikipedia.org/wiki/Tar_(computing)
 constexpr auto TAR_HEADER_SIZE = 512;
