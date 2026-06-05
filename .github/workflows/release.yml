@@ -23,7 +23,7 @@ jobs:
       # 1. Build and copy release binaries
       - name: Build and Copy Release Binaries
         run: |
-          bazelisk --bazelrc=.github/ci.bazelrc run //:copy_release_binaries
+          bazelisk run //:copy_release_binaries
 
       # 2. Upload all compiled binaries to the release
       - name: Upload Release Assets
