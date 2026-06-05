@@ -15,10 +15,12 @@ jobs:
           clang-format-version: "22"
           exclude-regex: 'bazel/registry'
 
-  test:
-    name: Build & Test (Linux, Cross-Compile Windows & macOS)
+  test-linux:
+    name: Build & Test (Linux, Cross-Compile macOS & Windows)
     runs-on: ubuntu-latest
     steps:
+      - name: Install buildozer
+        run: sudo curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-linux-amd64 -o /usr/bin/buildozer && sudo chmod +x /usr/bin/buildozer
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Set up Bazel
@@ -28,16 +30,54 @@ jobs:
           disk-cache: ${{ github.workflow }}
           repository-cache: true
       
+      # 1. Build & Test natively on Linux
       - name: Build and Test on Linux
         run: |
           bazelisk build //... --platforms=@llvm//platforms:linux_x86_64
           ./test/test.sh
       
-      - name: Cross-compile for Windows
-        run: bazelisk build //... --platforms=@llvm//platforms:windows_x86_64
+      # 2. Cross-compile and stage Windows binaries
+      - name: Build Windows Binaries
+        run: |
+          bazelisk build //bzlmod //bzlreg --platforms=@llvm//platforms:windows_x86_64
+          mkdir -p dist/bzlmod dist/bzlreg
+          cp bazel-bin/bzlmod/bzlmod.exe dist/bzlmod/
+          cp bazel-bin/bzlreg/bzlreg.exe dist/bzlreg/
 
+      # 3. Upload Windows binaries as a workflow artifact
+      - name: Upload Windows Binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-binaries
+          path: dist/
+      
+      # 4. Verify cross-compilation for macOS (Intel)
       - name: Cross-compile for macOS (x86_64)
         run: bazelisk build //... --platforms=@llvm//platforms:macos_x86_64
 
+      # 5. Verify cross-compilation for macOS (Apple Silicon)
       - name: Cross-compile for macOS (arm64)
         run: bazelisk build //... --platforms=@llvm//platforms:macos_aarch64
+
+  test-windows:
+    name: Test Execution (Windows)
+    needs: test-linux
+    runs-on: windows-latest
+    steps:
+      - name: Install buildozer
+        run: |
+          curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-windows-amd64.exe -o buildozer.exe
+          echo "${{ github.workspace }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # Download the pre-compiled Windows binaries from the Linux build job
+      - name: Download Windows Binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-binaries
+          path: bazel-bin
+
+      # Run the native Windows test suite using the pre-compiled binaries
+      - name: Run Windows tests
+        run: .\test\test.bat
