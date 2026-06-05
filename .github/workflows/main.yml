@@ -28,14 +28,14 @@ jobs:
       
       - name: Build and Test on Linux
         run: |
-          bazelisk --bazelrc=.github/ci.bazelrc build //... --platforms=@llvm//platforms:linux_x86_64
+          bazelisk build //... --platforms=@llvm//platforms:linux_x86_64
           ./test/test.sh
       
       - name: Cross-compile for Windows
-        run: bazelisk --bazelrc=.github/ci.bazelrc build //... --platforms=@llvm//platforms:windows_x86_64
+        run: bazelisk build //... --platforms=@llvm//platforms:windows_x86_64
 
       - name: Cross-compile for macOS (x86_64)
-        run: bazelisk --bazelrc=.github/ci.bazelrc build //... --platforms=@llvm//platforms:macos_x86_64
+        run: bazelisk build //... --platforms=@llvm//platforms:macos_x86_64
 
       - name: Cross-compile for macOS (arm64)
-        run: bazelisk --bazelrc=.github/ci.bazelrc build //... --platforms=@llvm//platforms:macos_aarch64
+        run: bazelisk build //... --platforms=@llvm//platforms:macos_aarch64
