@@ -2,6 +2,24 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.7 - 2026-06-05
+#### Bug Fixes
+- properly handle tar extended header entries size - (56dd680) - Ezekiel Warren
+#### Features
+- use hermetic llvm to compile (#123) - (b2753af) - Ezekiel Warren
+- use docoptexpr and update deps (#120) - (0f64772) - Ezekiel Warren
+- infer version from git commit date (#109) - (647f407) - Ezekiel Warren
+- minor progress messages - (c3400fc) - Ezekiel Warren
+- allow basic github urls by using 'gh' to get the default branch (#108) - (78dce54) - Ezekiel Warren
+#### Miscellaneous Chores
+- **(deps)** update dependency rules_cc to v0.2.8 (#112) - (6557867) - renovate[bot]
+- **(deps)** update dependency bazel to v8.4.1 (#66) - (d3a2bad) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.2.5 (#111) - (277a128) - renovate[bot]
+- **(deps)** update dependency rules_cc to v0.2.4 (#110) - (9aa51a3) - renovate[bot]
+- line endings - (a236176) - Ezekiel Warren
+
+- - -
+
 ## 0.2.6 - 2025-09-06
 #### Bug Fixes
 - handle modules without overlay or patch - (6e50176) - Ezekiel Warren
