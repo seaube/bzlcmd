@@ -1,5 +1,5 @@
 alias(
     name = "bzlreg",
-    visibility = ["//visibility:public"],
     actual = "//bzlreg:bzlreg",
+    visibility = ["//visibility:public"],
 )
