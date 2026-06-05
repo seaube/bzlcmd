@@ -19,6 +19,8 @@ jobs:
     name: Build & Test (Linux, Cross-Compile Windows & macOS)
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Set up Bazel
         uses: bazel-contrib/setup-bazel@0.19.0
         with:
