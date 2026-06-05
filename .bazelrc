@@ -5,5 +5,7 @@ common --incompatible_autoload_externally=+@rules_cc
 build --incompatible_enable_cc_toolchain_resolution
 build --incompatible_strict_action_env
 build --enable_runfiles
+build --@boost.context//:win-compile=win-mingw
+
 
 try-import %workspace%/user.bazelrc

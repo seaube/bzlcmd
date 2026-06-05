@@ -15,30 +15,59 @@ jobs:
           clang-format-version: "22"
           exclude-regex: 'bazel/registry'
 
-  test-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/cache@v4
-        with:
-          path: |
-            /Users/runneradmin/AppData/Local/bazelisk
-            /Users/runneradmin/.cache/bazel-disk-cache
-          key: ${{runner.os}}-bazel-cache
-      - uses: actions/checkout@v5
-      - run: curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-windows-amd64.exe -o .\buildozer.exe
-      - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
-      - run: .\test\test.bat
-
   test-linux:
+    name: Build & Test (Linux, Cross-Compile macOS & Windows)
     runs-on: ubuntu-latest
     steps:
-      - run: sudo curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-linux-amd64 -o /usr/bin/buildozer && sudo chmod +x /usr/bin/buildozer
-      - uses: actions/cache@v4
+      - name: Install buildozer
+        run: sudo curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-linux-amd64 -o /usr/bin/buildozer && sudo chmod +x /usr/bin/buildozer
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@0.19.0
         with:
-          path: |
-            ~/.cache/bazelisk
-            ~/.cache/bazel-disk-cache
-          key: ${{runner.os}}-bazel-cache
-      - uses: actions/checkout@v5
-      - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
-      - run: ./test/test.sh
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+      
+      - name: Build and Copy Release Binaries
+        run: bazelisk run //:copy_release_binaries
+      
+      - name: Run Linux Tests
+        run: |
+          export BZLMOD=$PWD/dist/bzlmod-linux-x86_64
+          export BZLREG=$PWD/dist/bzlreg-linux-x86_64
+          ./test/test.sh
+      
+      - name: Upload Windows Binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-binaries
+          path: dist/
+
+  test-windows:
+    name: Test Execution (Windows)
+    needs: test-linux
+    runs-on: windows-latest
+    steps:
+      - name: Install buildozer
+        run: |
+          curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-windows-amd64.exe -o buildozer.exe
+          echo "${{ github.workspace }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Download Windows Binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-binaries
+          path: dist
+
+      - name: Run Windows tests
+        run: |
+          $env:BZLMOD = "${{ github.workspace }}\dist\bzlmod-windows-x86_64.exe"
+          $env:BZLREG = "${{ github.workspace }}\dist\bzlreg-windows-x86_64.exe"
+          .\test\test.bat

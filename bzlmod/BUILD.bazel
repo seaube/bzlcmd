@@ -1,5 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
-load("//bazel:copts.bzl", "copts")
+load("//bazel:copts.bzl", "copts", "linkopts")
 
 package(default_visibility = ["//:__subpackages__"])
 
@@ -73,6 +73,7 @@ cc_binary(
     name = "bzlmod",
     srcs = ["bzlmod.cc"],
     copts = copts,
+    linkopts = linkopts,
     deps = [
         ":add_module",
         ":init_module",

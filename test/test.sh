@@ -6,8 +6,8 @@ SCRIPT_DIR=$(dirname "$0")
 
 BAZEL_BIN=$(bazelisk info bazel-bin)
 
-BZLREG="$BAZEL_BIN/bzlreg/bzlreg"
-BZLMOD="$BAZEL_BIN/bzlmod/bzlmod"
+BZLREG="${BZLREG:-$BAZEL_BIN/bzlreg/bzlreg}"
+BZLMOD="${BZLMOD:-$BAZEL_BIN/bzlmod/bzlmod}"
 
 TEST_REG_DIR="$PWD/$SCRIPT_DIR/reg"
 TEST_MODULE_DIR="$PWD/$SCRIPT_DIR/module"

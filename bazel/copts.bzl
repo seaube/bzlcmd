@@ -18,3 +18,14 @@ copts = select({
         "-DLIBDEFLATE_STATIC",
     ],
 })
+
+linkopts = select({
+    "@platforms//os:windows": [
+        "-lws2_32",
+        "-lmswsock",
+        "-liphlpapi",
+        "-lbcrypt",
+    ],
+    "//conditions:default": [],
+})
+

@@ -5,26 +5,8 @@ on:
     types: [published]
 
 jobs:
-  release-windows:
-    runs-on: windows-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/cache@v4
-        with:
-          path: |
-            /Users/runneradmin/AppData/Local/bazelisk
-            /Users/runneradmin/.cache/bazel-disk-cache
-          key: ${{runner.os}}-bazel-cache
-      - uses: actions/checkout@v5
-      - run: curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-windows-amd64.exe -o .\buildozer.exe
-      - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
-      - run: cp .\bazel-bin\bzlmod\bzlmod.exe .\bzlmod-windows-amd64.exe && cp .\bazel-bin\bzlreg\bzlreg.exe .\bzlreg-windows-amd64.exe 
-      - run: gh release upload ${{ github.event.release.tag_name }} bzlmod-windows-amd64.exe bzlreg-windows-amd64.exe 
-        env:
-          GH_TOKEN: ${{ github.token }}
-
-  release-linux:
+  release:
+    name: Build & Release Binaries (Linux, Windows, macOS)
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -37,8 +19,20 @@ jobs:
             ~/.cache/bazel-disk-cache
           key: ${{runner.os}}-bazel-cache
       - uses: actions/checkout@v5
-      - run: bazelisk --bazelrc=.github/ci.bazelrc build //...
-      - run: cp ./bazel-bin/bzlmod/bzlmod ./bzlmod-linux-amd64 && cp ./bazel-bin/bzlreg/bzlreg ./bzlreg-linux-amd64
-      - run: gh release upload ${{ github.event.release.tag_name }} bzlmod-linux-amd64 bzlreg-linux-amd64
+
+      # 1. Build and copy release binaries
+      - name: Build and Copy Release Binaries
+        run: |
+          bazelisk run //:copy_release_binaries
+
+      # 2. Upload all compiled binaries to the release
+      - name: Upload Release Assets
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} \
+            dist/bzlmod-linux-x86_64 dist/bzlreg-linux-x86_64 \
+            dist/bzlmod-windows-x86_64.exe dist/bzlreg-windows-x86_64.exe \
+            dist/bzlmod-macos-x86_64 dist/bzlreg-macos-x86_64 \
+            dist/bzlmod-macos-aarch64 dist/bzlreg-macos-aarch64
         env:
           GH_TOKEN: ${{ github.token }}
+
