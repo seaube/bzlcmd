@@ -249,8 +249,10 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	auto archive_url_result = resolve_archive_url(archive_url_str);
 	auto archive_filename =
 		fs::path{std::string{archive_url_result.url.path()}}.filename().string();
-	if(!archive_filename.ends_with(".tar.gz") &&
-		 !archive_filename.ends_with(".tgz")) {
+	if(
+		!archive_filename.ends_with(".tar.gz") &&
+		!archive_filename.ends_with(".tgz")
+	) {
 		std::println(
 			stderr,
 			"Archive {} is not supported. Only .tar.gz archives are allowed.",
