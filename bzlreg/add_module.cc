@@ -81,20 +81,21 @@ static auto infer_module_name( //
 
 static auto commit_date_to_version_string(std::string commit_date)
 	-> std::string {
-	if (commit_date.length() >= 10 &&
-	    std::isdigit(static_cast<unsigned char>(commit_date[0])) &&
-	    std::isdigit(static_cast<unsigned char>(commit_date[1])) &&
-	    std::isdigit(static_cast<unsigned char>(commit_date[2])) &&
-	    std::isdigit(static_cast<unsigned char>(commit_date[3])) &&
-	    commit_date[4] == '-' &&
-	    std::isdigit(static_cast<unsigned char>(commit_date[5])) &&
-	    std::isdigit(static_cast<unsigned char>(commit_date[6])) &&
-	    commit_date[7] == '-' &&
-	    std::isdigit(static_cast<unsigned char>(commit_date[8])) &&
-	    std::isdigit(static_cast<unsigned char>(commit_date[9]))) {
-		return commit_date.substr(0, 4) +
-		       commit_date.substr(5, 2) +
-		       commit_date.substr(8, 2) + ".0";
+	if(
+		commit_date.length() >= 10 &&
+		std::isdigit(static_cast<unsigned char>(commit_date[0])) &&
+		std::isdigit(static_cast<unsigned char>(commit_date[1])) &&
+		std::isdigit(static_cast<unsigned char>(commit_date[2])) &&
+		std::isdigit(static_cast<unsigned char>(commit_date[3])) &&
+		commit_date[4] == '-' &&
+		std::isdigit(static_cast<unsigned char>(commit_date[5])) &&
+		std::isdigit(static_cast<unsigned char>(commit_date[6])) &&
+		commit_date[7] == '-' &&
+		std::isdigit(static_cast<unsigned char>(commit_date[8])) &&
+		std::isdigit(static_cast<unsigned char>(commit_date[9]))
+	) {
+		return commit_date.substr(0, 4) + commit_date.substr(5, 2) +
+			commit_date.substr(8, 2) + ".0";
 	}
 
 	std::println(stderr, "ERROR: failed to parse commit date: {}", commit_date);
