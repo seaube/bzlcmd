@@ -18,7 +18,7 @@ jobs:
             ~/.cache/bazelisk
             ~/.cache/bazel-disk-cache
           key: ${{runner.os}}-bazel-cache
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       # 1. Build and copy release binaries
       - name: Build and Copy Release Binaries
