@@ -1,5 +1,83 @@
+load("@bzlws//rules:bzlws_copy.bzl", "bzlws_copy")
+load(
+    "//bazel:transition.bzl",
+    "alias_linux_x86_64",
+    "alias_macos_aarch64",
+    "alias_macos_x86_64",
+    "alias_windows_x86_64",
+)
+
+package(default_visibility = ["//visibility:public"])
+
 alias(
     name = "bzlreg",
     actual = "//bzlreg:bzlreg",
-    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "bzlmod",
+    actual = "//bzlmod:bzlmod",
+)
+
+# Transitioned variants for bzlmod
+alias_linux_x86_64(
+    name = "bzlmod_linux_amd64",
+    actual = "//bzlmod:bzlmod",
+)
+
+alias_windows_x86_64(
+    name = "bzlmod_windows_amd64",
+    actual = "//bzlmod:bzlmod",
+)
+
+alias_macos_x86_64(
+    name = "bzlmod_darwin_amd64",
+    actual = "//bzlmod:bzlmod",
+)
+
+alias_macos_aarch64(
+    name = "bzlmod_darwin_arm64",
+    actual = "//bzlmod:bzlmod",
+)
+
+# Transitioned variants for bzlreg
+alias_linux_x86_64(
+    name = "bzlreg_linux_amd64",
+    actual = "//bzlreg:bzlreg",
+)
+
+alias_windows_x86_64(
+    name = "bzlreg_windows_amd64",
+    actual = "//bzlreg:bzlreg",
+)
+
+alias_macos_x86_64(
+    name = "bzlreg_darwin_amd64",
+    actual = "//bzlreg:bzlreg",
+)
+
+alias_macos_aarch64(
+    name = "bzlreg_darwin_arm64",
+    actual = "//bzlreg:bzlreg",
+)
+
+filegroup(
+    name = "all_platforms",
+    srcs = [
+        ":bzlmod_darwin_amd64",
+        ":bzlmod_darwin_arm64",
+        ":bzlmod_linux_amd64",
+        ":bzlmod_windows_amd64",
+        ":bzlreg_darwin_amd64",
+        ":bzlreg_darwin_arm64",
+        ":bzlreg_linux_amd64",
+        ":bzlreg_windows_amd64",
+    ],
+)
+
+bzlws_copy(
+    name = "copy_release_binaries",
+    srcs = [":all_platforms"],
+    out = "dist/{BASENAME}-{TARGET_OS}-{TARGET_CPU}{EXT}",
+    force = True,
 )

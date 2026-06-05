@@ -1,7 +1,7 @@
 @echo OFF
 
-set BZLREG=%~dp0..\bazel-bin\bzlreg\bzlreg.exe
-set BZLMOD=%~dp0..\bazel-bin\bzlmod\bzlmod.exe
+if "%BZLREG%"=="" set BZLREG=%~dp0..\bazel-bin\bzlreg\bzlreg.exe
+if "%BZLMOD%"=="" set BZLMOD=%~dp0..\bazel-bin\bzlmod\bzlmod.exe
 
 echo initializing test registry
 %BZLREG% init %~dp0reg || exit /b

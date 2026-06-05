@@ -33,16 +33,18 @@ jobs:
       # 1. Build & Test natively on Linux
       - name: Build and Test on Linux
         run: |
-          bazelisk build //... --platforms=@llvm//platforms:linux_x86_64
+          bazelisk build //:bzlmod_linux_amd64 //:bzlreg_linux_amd64
+          export BZLMOD=$(bazelisk cquery //:bzlmod_linux_amd64 --output=files)
+          export BZLREG=$(bazelisk cquery //:bzlreg_linux_amd64 --output=files)
           ./test/test.sh
       
       # 2. Cross-compile and stage Windows binaries
       - name: Build Windows Binaries
         run: |
-          bazelisk build //bzlmod //bzlreg --platforms=@llvm//platforms:windows_x86_64
+          bazelisk build //:bzlmod_windows_amd64 //:bzlreg_windows_amd64
           mkdir -p dist/bzlmod dist/bzlreg
-          cp bazel-bin/bzlmod/bzlmod.exe dist/bzlmod/
-          cp bazel-bin/bzlreg/bzlreg.exe dist/bzlreg/
+          cp $(bazelisk cquery //:bzlmod_windows_amd64 --output=files) dist/bzlmod/bzlmod.exe
+          cp $(bazelisk cquery //:bzlreg_windows_amd64 --output=files) dist/bzlreg/bzlreg.exe
 
       # 3. Upload Windows binaries as a workflow artifact
       - name: Upload Windows Binaries
@@ -53,11 +55,11 @@ jobs:
       
       # 4. Verify cross-compilation for macOS (Intel)
       - name: Cross-compile for macOS (x86_64)
-        run: bazelisk build //... --platforms=@llvm//platforms:macos_x86_64
+        run: bazelisk build //:bzlmod_darwin_amd64 //:bzlreg_darwin_amd64
 
       # 5. Verify cross-compilation for macOS (Apple Silicon)
       - name: Cross-compile for macOS (arm64)
-        run: bazelisk build //... --platforms=@llvm//platforms:macos_aarch64
+        run: bazelisk build //:bzlmod_darwin_arm64 //:bzlreg_darwin_arm64
 
   test-windows:
     name: Test Execution (Windows)

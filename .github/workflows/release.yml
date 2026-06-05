@@ -20,41 +20,19 @@ jobs:
           key: ${{runner.os}}-bazel-cache
       - uses: actions/checkout@v5
 
-      # 1. Build for Linux
-      - name: Build Linux Binaries
+      # 1. Build and copy release binaries
+      - name: Build and Copy Release Binaries
         run: |
-          bazelisk --bazelrc=.github/ci.bazelrc build //bzlmod //bzlreg --platforms=@llvm//platforms:linux_x86_64
-          cp ./bazel-bin/bzlmod/bzlmod ./bzlmod-linux-amd64
-          cp ./bazel-bin/bzlreg/bzlreg ./bzlreg-linux-amd64
+          bazelisk --bazelrc=.github/ci.bazelrc run //:copy_release_binaries
 
-      # 2. Build for Windows
-      - name: Build Windows Binaries
-        run: |
-          bazelisk --bazelrc=.github/ci.bazelrc build //bzlmod //bzlreg --platforms=@llvm//platforms:windows_x86_64
-          cp ./bazel-bin/bzlmod/bzlmod.exe ./bzlmod-windows-amd64.exe
-          cp ./bazel-bin/bzlreg/bzlreg.exe ./bzlreg-windows-amd64.exe
-
-      # 3. Build for macOS (Intel)
-      - name: Build macOS Intel Binaries
-        run: |
-          bazelisk --bazelrc=.github/ci.bazelrc build //bzlmod //bzlreg --platforms=@llvm//platforms:macos_x86_64
-          cp ./bazel-bin/bzlmod/bzlmod ./bzlmod-darwin-amd64
-          cp ./bazel-bin/bzlreg/bzlreg ./bzlreg-darwin-amd64
-
-      # 4. Build for macOS (Apple Silicon)
-      - name: Build macOS Apple Silicon Binaries
-        run: |
-          bazelisk --bazelrc=.github/ci.bazelrc build //bzlmod //bzlreg --platforms=@llvm//platforms:macos_aarch64
-          cp ./bazel-bin/bzlmod/bzlmod ./bzlmod-darwin-arm64
-          cp ./bazel-bin/bzlreg/bzlreg ./bzlreg-darwin-arm64
-
-      # 5. Upload all compiled binaries to the release
+      # 2. Upload all compiled binaries to the release
       - name: Upload Release Assets
         run: |
           gh release upload ${{ github.event.release.tag_name }} \
-            bzlmod-linux-amd64 bzlreg-linux-amd64 \
-            bzlmod-windows-amd64.exe bzlreg-windows-amd64.exe \
-            bzlmod-darwin-amd64 bzlreg-darwin-amd64 \
-            bzlmod-darwin-arm64 bzlreg-darwin-arm64
+            dist/bzlmod-linux-x86_64 dist/bzlreg-linux-x86_64 \
+            dist/bzlmod-windows-x86_64.exe dist/bzlreg-windows-x86_64.exe \
+            dist/bzlmod-macos-x86_64 dist/bzlreg-macos-x86_64 \
+            dist/bzlmod-macos-aarch64 dist/bzlreg-macos-aarch64
         env:
           GH_TOKEN: ${{ github.token }}
+

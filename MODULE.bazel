@@ -9,6 +9,7 @@ bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
 bazel_dep(name = "rules_cc", version = "0.2.19")
 bazel_dep(name = "platforms", version = "1.1.0")
 bazel_dep(name = "bazel_skylib", version = "1.9.0")
+bazel_dep(name = "with_cfg.bzl", version = "0.12.0")
 bazel_dep(name = "nlohmann_json", version = "3.12.0.bcr.1")
 bazel_dep(name = "boost.process", version = "1.90.0.bcr.1")
 bazel_dep(name = "boost.context", version = "1.90.0.bcr.1")
@@ -18,6 +19,13 @@ bazel_dep(name = "libdeflate", version = "1.19")
 bazel_dep(name = "abseil-cpp", version = "20260526.0")
 bazel_dep(name = "boringssl", version = "0.20260526.0")
 bazel_dep(name = "docoptexpr", version = "0.1.0")
+bazel_dep(name = "bzlws", version = "0.2.0")
+git_override(
+    module_name = "bzlws",
+    commit = "831ef7001afeef7b8ea9ed741f6ec8cd2d4cfbc6",
+    remote = "https://github.com/zaucy/bzlws.git",
+)
+
 git_override(
     module_name = "docoptexpr",
     commit = "2998cc8d58b10986f7d3123b6e0396e1775b682c",
