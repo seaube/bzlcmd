@@ -1,6 +1,5 @@
 #include "bzlreg/decompress.hh"
 
-#include <iostream>
 #include "libdeflate.h"
 #include "bzlreg/defer.hh"
 #include "bzlreg/unused.hh"

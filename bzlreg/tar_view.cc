@@ -3,7 +3,7 @@
 #include <string>
 #include <format>
 #include <string_view>
-#include <iostream>
+#include <print>
 #include <cassert>
 #include <charconv>
 
@@ -74,8 +74,11 @@ auto get_tar_header_file_size(std::span<const std::byte> bytes) -> std::size_t {
 	);
 
 	if(ec != std::errc{}) {
-		std::cerr << "ERROR: bad tar header file size: "
-							<< std::make_error_code(ec).message() << std::endl;
+		std::println(
+			stderr,
+			"ERROR: bad tar header file size: {}",
+			std::make_error_code(ec).message()
+		);
 		std::abort();
 	}
 
@@ -218,7 +221,7 @@ bzlreg::tar_view_file::tar_view_file( //
 		while(!extended_header.empty()) {
 			auto length_sep_index = extended_header.find(' ');
 			if(length_sep_index == std::string::npos) {
-				std::cerr << "ERROR: bad extended header length separator" << std::endl;
+				std::println(stderr, "ERROR: bad extended header length separator");
 				std::abort();
 			}
 
@@ -230,15 +233,20 @@ bzlreg::tar_view_file::tar_view_file( //
 			);
 
 			if(ec != std::errc{}) {
-				std::cerr << "ERROR: bad extended header length: "
-									<< std::make_error_code(ec).message() << std::endl;
+				std::println(
+					stderr,
+					"ERROR: bad extended header length: {}",
+					std::make_error_code(ec).message()
+				);
 				std::abort();
 			}
 
 			auto key_value_sep_index = extended_header.find('=', length_sep_index);
 			if(key_value_sep_index == std::string::npos) {
-				std::cerr << "ERROR: bad extended header key value pair separator"
-									<< std::endl;
+				std::println(
+					stderr,
+					"ERROR: bad extended header key value pair separator"
+				);
 				std::abort();
 			}
 
@@ -346,8 +354,11 @@ auto bzlreg::tar_view_file::size() const noexcept -> size_t {
 				file_size
 			);
 			if(ec != std::errc{}) {
-				std::cerr << "ERROR: extended header file size: "
-									<< std::make_error_code(ec).message() << std::endl;
+				std::println(
+					stderr,
+					"ERROR: extended header file size: {}",
+					std::make_error_code(ec).message()
+				);
 				std::abort();
 			}
 		} else {
@@ -359,8 +370,11 @@ auto bzlreg::tar_view_file::size() const noexcept -> size_t {
 			switch(next_typeflag) {
 				case typeflag_enum::extended_header:
 				case typeflag_enum::global_extended_header:
-					std::cerr << "ERROR: unexpected typeflag: "
-										<< static_cast<char>(next_typeflag) << "\n";
+					std::println(
+						stderr,
+						"ERROR: unexpected typeflag: {}",
+						static_cast<char>(next_typeflag)
+					);
 					std::abort();
 					break;
 				default:

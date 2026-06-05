@@ -1,8 +1,7 @@
 #include "bzlreg/util.hh"
 
-#include <iostream>
+#include <print>
 #include <execution>
-#include <format>
 #include <unordered_map>
 #include <string>
 #include <fstream>
@@ -123,10 +122,12 @@ auto bzlreg::calc_source_integrity( //
 				return;
 			}
 
-			auto integrity = calc_integrity(std::span{
-				file_content.data(),
-				file_content.size(),
-			});
+			auto integrity = calc_integrity(
+				std::span{
+					file_content.data(),
+					file_content.size(),
+				}
+			);
 			if(!integrity) {
 				integrity_errors.at(pair.first) = "calc_integrity() failed"s;
 				return;
@@ -139,7 +140,7 @@ auto bzlreg::calc_source_integrity( //
 	for(auto&& [p, err] : integrity_errors) {
 		if(!err.empty()) {
 			has_error = true;
-			std::cerr << std::format("[ERROR] {}: {}\n", p, err);
+			std::println(stderr, "[ERROR] {}: {}", p, err);
 		}
 	}
 
@@ -158,7 +159,7 @@ auto bzlreg::calc_source_integrity( //
 		}
 	}
 
-	std::cout << std::format("updating {}\n", source_json_path.generic_string());
+	std::println("updating {}", source_json_path.generic_string());
 	std::ofstream{source_json_path, std::ios_base::binary}
 		<< json{source}[0].dump(4, ' ', false);
 }

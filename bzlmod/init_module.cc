@@ -1,8 +1,7 @@
 #include "bzlmod/init_module.hh"
 
 #include <filesystem>
-#include <iostream>
-#include <format>
+#include <print>
 #include <string>
 #include <fstream>
 #include "absl/strings/ascii.h"
@@ -31,7 +30,8 @@ auto bzlmod::init_module( //
 	auto bazelrc_file = dir / ".bazelrc";
 
 	if(fs::exists(module_file)) {
-		std::cerr << std::format(
+		std::println(
+			stderr,
 			"[ERROR] Cannot init module. {} already exists.",
 			dir.generic_string()
 		);

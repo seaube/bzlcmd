@@ -162,6 +162,6 @@ cc_binary(
         ":calc_integrity",
         ":init_registry",
         ":unused",
-        "@docopt.cpp//:docopt",
+        "@docoptexpr",
     ],
 )

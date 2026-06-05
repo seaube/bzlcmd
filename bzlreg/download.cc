@@ -1,8 +1,9 @@
 #include "bzlreg/download.hh"
 
-#include <boost/process.hpp>
+#define BOOST_PROCESS_VERSION 1
+#include <boost/process/v1.hpp>
 #include <boost/asio.hpp>
-#include <iostream>
+
 #include <string>
 
 namespace bp = boost::process;

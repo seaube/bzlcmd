@@ -77,6 +77,6 @@ cc_binary(
         ":add_module",
         ":init_module",
         ":update_module",
-        "@docopt.cpp//:docopt",
+        "@docoptexpr",
     ],
 )

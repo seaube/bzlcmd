@@ -1,9 +1,10 @@
 #include "bzlreg/gh_exec.hh"
 
-#include <iostream>
+#include <print>
 #include <filesystem>
 #include <fstream>
-#include <boost/process.hpp>
+#define BOOST_PROCESS_VERSION 1
+#include <boost/process/v1.hpp>
 
 namespace bp = boost::process;
 namespace fs = std::filesystem;
@@ -38,7 +39,7 @@ auto bzlreg::gh_default_branch(std::string org, std::string repo)
 	auto line = std::string{};
 	while(std::getline(gh_proc_stderr, line)) {
 		if(line.empty()) {
-			std::cerr << std::format("ERROR: {}\n", line);
+			std::println(stderr, "ERROR: {}", line);
 		}
 	}
 
@@ -86,7 +87,7 @@ auto bzlreg::gh_branch_commit_sha(
 	auto line = std::string{};
 	while(std::getline(gh_proc_stderr, line)) {
 		if(line.empty()) {
-			std::cerr << std::format("ERROR: {}\n", line);
+			std::println(stderr, "ERROR: {}", line);
 		}
 	}
 
@@ -134,7 +135,7 @@ auto bzlreg::gh_commit_date(
 	auto line = std::string{};
 	while(std::getline(gh_proc_stderr, line)) {
 		if(line.empty()) {
-			std::cerr << std::format("ERROR: {}\n", line);
+			std::println(stderr, "ERROR: {}", line);
 		}
 	}
 
