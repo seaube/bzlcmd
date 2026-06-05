@@ -16,9 +16,10 @@ bazel_dep(name = "libdeflate", version = "1.19")
 bazel_dep(name = "abseil-cpp", version = "20260526.0")
 bazel_dep(name = "boringssl", version = "0.20260526.0")
 bazel_dep(name = "docoptexpr", version = "0.1.0")
-local_path_override(
+git_override(
     module_name = "docoptexpr",
-    path = "C:/Users/zekew/projects/zaucy/docoptexpr",
+    commit = "2998cc8d58b10986f7d3123b6e0396e1775b682c",
+    remote = "https://github.com/zaucy/docoptexpr.git",
 )
 
 git_override(
