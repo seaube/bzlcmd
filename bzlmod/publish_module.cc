@@ -100,7 +100,7 @@ static auto get_git_remote_url(const fs::path& repo_dir)
 		bp::start_dir(repo_dir.generic_string()),
 		bp::args({"remote", "get-url", "origin"}),
 		bp::std_out > git_out,
-		bp::std_in < bp::null
+		bp::std_in < bp::null,
 	};
 	std::string url;
 	std::getline(git_out, url);
@@ -591,18 +591,18 @@ tasks:
 	auto pr_proc = bp::child{
 		bp::exe(gh_exe),
 		bp::start_dir(temp_bcr_dir.generic_string()),
-		bp::args(
-			{"pr",
-			 "create",
-			 "--title",
-			 std::format("Publish {}@{}", module_name, module_version),
-			 "--body",
-			 std::format(
-				 "Publish {}@{} via bzlmod publish",
-				 module_name,
-				 module_version
-			 )}
-		)
+		bp::args({
+			"pr",
+			"create",
+			"--title",
+			std::format("Publish {}@{}", module_name, module_version),
+			"--body",
+			std::format(
+				"Publish {}@{} via bzlmod publish",
+				module_name,
+				module_version
+			),
+		}),
 	};
 	pr_proc.wait();
 	if(pr_proc.exit_code() != 0) {
