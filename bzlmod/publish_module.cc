@@ -187,6 +187,55 @@ static auto get_matching_tag(const fs::path& repo_dir, std::string_view version)
 	return normal_tag;
 }
 
+static auto get_git_commit_sha(const fs::path& repo_dir, std::string_view ref)
+	-> std::optional<std::string> {
+	auto git_exe = bp::search_path("git");
+	if(git_exe.empty()) {
+		return std::nullopt;
+	}
+	auto git_out = bp::ipstream{};
+	auto git_proc = bp::child{
+		bp::exe(git_exe),
+		bp::start_dir(repo_dir.generic_string()),
+		bp::args({"rev-list", "-n", "1", std::string{ref}}),
+		bp::std_out > git_out,
+		bp::std_err > bp::null
+	};
+	std::string sha;
+	std::getline(git_out, sha);
+	git_proc.wait();
+	if(git_proc.exit_code() != 0 || sha.empty()) {
+		return std::nullopt;
+	}
+	return std::string{absl::StripAsciiWhitespace(sha)};
+}
+
+static auto parse_version_components(std::string_view version)
+	-> std::vector<int> {
+	std::vector<int> components;
+	for(const auto& part : absl::StrSplit(version, '.')) {
+		try {
+			components.push_back(std::stoi(std::string{part}));
+		} catch(...) {
+			components.push_back(0);
+		}
+	}
+	return components;
+}
+
+static auto compare_versions(std::string_view a, std::string_view b) -> bool {
+	auto comps_a = parse_version_components(a);
+	auto comps_b = parse_version_components(b);
+	for(size_t i = 0; i < std::max(comps_a.size(), comps_b.size()); ++i) {
+		int val_a = i < comps_a.size() ? comps_a[i] : 0;
+		int val_b = i < comps_b.size() ? comps_b[i] : 0;
+		if(val_a != val_b) {
+			return val_a < val_b;
+		}
+	}
+	return a < b;
+}
+
 static auto extract_tar(bzlreg::tar_view tar_view, const fs::path& dest_dir)
 	-> bool {
 	auto ec = std::error_code{};
@@ -220,6 +269,21 @@ static auto extract_tar(bzlreg::tar_view tar_view, const fs::path& dest_dir)
 }
 
 auto bzlmod::publish_module(bool dry_run) -> int {
+	// Clean up old temporary directories from previous runs
+	{
+		auto cleanup_ec = std::error_code{};
+		for(const auto& entry :
+				fs::directory_iterator(fs::temp_directory_path(), cleanup_ec)) {
+			auto name = entry.path().filename().generic_string();
+			if(
+				name.starts_with("bzlmod-bcr-") || name.starts_with("bzlmod-src-") ||
+				name.starts_with("bzlmod-ob-")
+			) {
+				fs::remove_all(entry.path(), cleanup_ec);
+			}
+		}
+	}
+
 	if(!bzlreg::is_gh_available()) {
 		std::println(
 			stderr,
@@ -287,6 +351,67 @@ auto bzlmod::publish_module(bool dry_run) -> int {
 		tag
 	);
 
+	auto head_sha = get_git_commit_sha(*workspace_dir, "HEAD");
+	auto tag_sha = get_git_commit_sha(*workspace_dir, tag);
+	if(head_sha && tag_sha && *head_sha == *tag_sha) {
+		auto gh_exe = bp::search_path("gh");
+		if(!gh_exe.empty()) {
+			auto gh_out = bp::ipstream{};
+			auto gh_proc = bp::child{
+				bp::exe(gh_exe),
+				bp::args(
+					{"api",
+					 std::format(
+						 "repos/{}/{}/releases/tags/{}",
+						 gh_info->org,
+						 gh_info->repo,
+						 tag
+					 )}
+				),
+				bp::std_out > gh_out,
+				bp::std_err > bp::null
+			};
+			std::string response{
+				std::istreambuf_iterator<char>{gh_out},
+				std::istreambuf_iterator<char>{}
+			};
+			gh_proc.wait();
+			if(gh_proc.exit_code() == 0 && !response.empty()) {
+				try {
+					auto release_json = json::parse(response);
+					if(
+						release_json.contains("assets") && release_json["assets"].is_array()
+					) {
+						auto target_name1 = std::format(
+							"{}-{}.tar.gz",
+							module_info->name,
+							module_info->version
+						);
+						auto target_name2 = std::format(
+							"{}-v{}.tar.gz",
+							module_info->name,
+							module_info->version
+						);
+						for(const auto& asset : release_json["assets"]) {
+							if(
+								asset.contains("name") && asset.contains("browser_download_url")
+							) {
+								auto name = asset["name"].get<std::string>();
+								if(name == target_name1 || name == target_name2) {
+									archive_url =
+										asset["browser_download_url"].get<std::string>();
+									break;
+								}
+							}
+						}
+					}
+				} catch(...) {
+					// Ignore json parsing/access errors
+				}
+			}
+		}
+	}
+
 	std::println(
 		"Publishing module {}@{}",
 		module_info->name,
@@ -300,13 +425,67 @@ auto bzlmod::publish_module(bool dry_run) -> int {
 		fs::temp_directory_path() / std::format("bzlmod-bcr-{}", now_ms);
 	auto temp_src_dir =
 		fs::temp_directory_path() / std::format("bzlmod-src-{}", now_ms);
+	auto temp_ob_dir =
+		fs::temp_directory_path() / std::format("bzlmod-ob-{}", now_ms);
+
+	std::string strip_prefix;
+	bool        succeeded = false;
 
 	auto cleanup_bcr = defer([&]() {
-		if(!dry_run) {
+		if(succeeded) {
 			fs::remove_all(temp_bcr_dir, ec);
+		} else if(fs::exists(temp_bcr_dir)) {
+			std::println("Registry directory: {}", temp_bcr_dir.generic_string());
+			std::println(
+				"To submit the PR to the BCR, run the following commands in the "
+				"registry directory:"
+			);
+			std::println(
+				"  git checkout -b publish-{}-{}",
+				module_info->name,
+				module_info->version
+			);
+			std::println("  git add .");
+			std::println(
+				"  git commit -m \"Publish {}@{}\"",
+				module_info->name,
+				module_info->version
+			);
+			std::println(
+				"  gh pr create --title \"Publish {}@{}\" --body \"Publish {}@{} via "
+				"bzlmod publish\"",
+				module_info->name,
+				module_info->version,
+				module_info->name,
+				module_info->version
+			);
 		}
 	});
-	auto cleanup_src = defer([&]() { fs::remove_all(temp_src_dir, ec); });
+
+	auto cleanup_src = defer([&]() {
+		fs::remove_all(temp_src_dir, ec);
+		fs::remove_all(temp_ob_dir, ec);
+	});
+
+	auto shutdown_bazel = defer([&]() {
+		auto bazel_exe_local = bp::search_path("bazel");
+		if(!bazel_exe_local.empty()) {
+			auto test_workspace_root = temp_src_dir / strip_prefix;
+			if(fs::exists(test_workspace_root)) {
+				bp::child{
+					bp::exe(bazel_exe_local),
+					bp::start_dir(test_workspace_root.generic_string()),
+					bp::args(
+						{std::format("--output_base={}", temp_ob_dir.generic_string()),
+						 "shutdown"}
+					),
+					bp::std_out > bp::null,
+					bp::std_err > bp::null
+				}
+					.wait();
+			}
+		}
+	});
 
 	// Clone BCR
 	std::println("Cloning bazel-central-registry...");
@@ -360,7 +539,7 @@ auto bzlmod::publish_module(bool dry_run) -> int {
 	}
 
 	auto source_json = json::parse(std::ifstream{source_json_path});
-	auto strip_prefix = source_json.at("strip_prefix").get<std::string>();
+	strip_prefix = source_json.at("strip_prefix").get<std::string>();
 
 	// Handle presubmit.yml
 	auto presubmit_dest_path =
@@ -382,20 +561,88 @@ auto bzlmod::publish_module(bool dry_run) -> int {
 			ec
 		);
 	} else {
-		std::println("No local presubmit.yml found. Generating a default one...");
-		auto default_presubmit =
-			std::ofstream{presubmit_dest_path, std::ios::binary};
-		default_presubmit << R"(matrix:
-  platform:
-    - ubuntu2004
-tasks:
-  ubuntu2004:
-    platform: ubuntu2004
-    build_targets:
-      - "//..."
-    test_targets:
-      - "//..."
-)";
+		fs::path previous_presubmit_path;
+		auto     parent_module_dir = temp_bcr_dir / "modules" / module_name;
+		if(fs::exists(parent_module_dir)) {
+			std::vector<fs::path> candidate_paths;
+			for(const auto& entry : fs::directory_iterator(parent_module_dir, ec)) {
+				if(entry.is_directory() && entry.path().filename() != module_version) {
+					auto path = entry.path() / "presubmit.yml";
+					if(fs::exists(path)) {
+						candidate_paths.push_back(path);
+					}
+				}
+			}
+			if(!candidate_paths.empty()) {
+				std::sort(
+					candidate_paths.begin(),
+					candidate_paths.end(),
+					[](const fs::path& a, const fs::path& b) {
+						return compare_versions(
+							a.parent_path().filename().string(),
+							b.parent_path().filename().string()
+						);
+					}
+				);
+				previous_presubmit_path = candidate_paths.back();
+			}
+		}
+
+		if(!previous_presubmit_path.empty()) {
+			auto prev_version =
+				previous_presubmit_path.parent_path().filename().string();
+			std::println(
+				"No local presubmit.yml found. Copying from previous version {}...",
+				prev_version
+			);
+			fs::copy_file(
+				previous_presubmit_path,
+				presubmit_dest_path,
+				fs::copy_options::overwrite_existing,
+				ec
+			);
+		} else {
+			std::println(
+				"No local or previous presubmit.yml found. Generating a default one..."
+			);
+			bool has_test_targets = true;
+			auto query_bazel_exe = bp::search_path("bazel");
+			if(!query_bazel_exe.empty()) {
+				auto query_out = bp::ipstream{};
+				auto query_proc = bp::child{
+					bp::exe(query_bazel_exe),
+					bp::start_dir(workspace_dir->generic_string()),
+					bp::args({"query", "--keep_going", "kind(test, //...)"}),
+					bp::std_out > query_out,
+					bp::std_err > bp::null
+				};
+				std::string line;
+				bool        has_valid_test = false;
+				while(std::getline(query_out, line)) {
+					auto trimmed = absl::StripAsciiWhitespace(line);
+					if(!trimmed.empty() && !trimmed.starts_with("//bazel-")) {
+						has_valid_test = true;
+					}
+				}
+				query_proc.wait();
+				has_test_targets = has_valid_test;
+			}
+
+			auto default_presubmit =
+				std::ofstream{presubmit_dest_path, std::ios::binary};
+			default_presubmit << "matrix:\n"
+												<< "  platform:\n"
+												<< "    - ubuntu2004\n"
+												<< "tasks:\n"
+												<< "  ubuntu2004:\n"
+												<< "    platform: ubuntu2004\n"
+												<< "    build_targets:\n"
+												<< "      - \"//...\"\n";
+			if(has_test_targets) {
+				default_presubmit << "    test_targets:\n"
+													<< "      - \"//...\"\n";
+			}
+		}
 	}
 
 	// Parse targets from presubmit.yml
@@ -451,7 +698,7 @@ tasks:
 												 const std::vector<std::string>& targets
 											 ) -> int {
 		auto args = std::vector<std::string>{
-			std::format("--output_base={}", (temp_src_dir / "ob").generic_string()),
+			std::format("--output_base={}", temp_ob_dir.generic_string()),
 			std::string{subcommand}
 		};
 
@@ -504,44 +751,12 @@ tasks:
 		}
 	}
 
-	// Shutdown simulated bazel server to release resources
-	bp::child{
-		bp::exe(bazel_exe),
-		bp::start_dir(test_workspace_root.generic_string()),
-		bp::args(
-			{std::format("--output_base={}", (temp_src_dir / "ob").generic_string()),
-			 "shutdown"}
-		)
-	}
-		.wait();
+	// Simulated bazel server will be automatically shut down by shutdown_bazel
+	// defer block
 
 	if(dry_run) {
 		std::println("Dry run enabled. Skipping commit and PR creation.");
 		std::println("Verification was successful!");
-		std::println("Registry directory: {}", temp_bcr_dir.generic_string());
-		std::println(
-			"To submit the PR to the BCR, run the following commands in the registry "
-			"directory:"
-		);
-		std::println(
-			"  git checkout -b publish-{}-{}",
-			module_name,
-			module_version
-		);
-		std::println("  git add .");
-		std::println(
-			"  git commit -m \"Publish {}@{}\"",
-			module_name,
-			module_version
-		);
-		std::println(
-			"  gh pr create --title \"Publish {}@{}\" --body \"Publish {}@{} via "
-			"bzlmod publish\"",
-			module_name,
-			module_version,
-			module_name,
-			module_version
-		);
 		return 0;
 	}
 
@@ -611,5 +826,6 @@ tasks:
 	}
 
 	std::println("Successfully published {}@{}!", module_name, module_version);
+	succeeded = true;
 	return 0;
 }
