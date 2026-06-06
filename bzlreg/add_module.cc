@@ -354,74 +354,93 @@ auto bzlreg::add_module(add_module_options options) -> int {
 	fs::create_directories(source_config_path.parent_path(), ec);
 
 	auto metadata_config_path = module_dir / "metadata.json";
-	auto metadata_config = bzlreg::metadata_config{};
+	json metadata_json;
 
 	if(fs::exists(metadata_config_path)) {
-		metadata_config = json::parse(std::ifstream{metadata_config_path});
-	}
-
-	for(auto version : metadata_config.versions) {
-		if(module_version == version) {
-			std::println( //
-				stderr,
-				"ERROR: {}@{} already exists",
-				module_name,
-				version
-			);
-			return 1;
-		}
-	}
-
-	metadata_config.versions.emplace_back(module_version);
-
-	if(!metadata_config.repository) {
-		metadata_config.repository.emplace();
-	}
-	if(metadata_config.repository->empty()) {
-		auto inferred_repository =
-			infer_repository_from_url(archive_url_result.url);
-		if(inferred_repository) {
-			metadata_config.repository->emplace_back(*inferred_repository);
+		metadata_json = json::parse(std::ifstream{metadata_config_path});
+		if(
+			metadata_json.contains("versions") && metadata_json["versions"].is_array()
+		) {
+			for(const auto& version : metadata_json["versions"]) {
+				if(version.is_string() && version.get<std::string>() == module_version) {
+					std::println(
+						stderr,
+						"ERROR: {}@{} already exists",
+						module_name,
+						module_version
+					);
+					return 1;
+				}
+			}
+			metadata_json["versions"].push_back(module_version);
 		} else {
-			std::println( //
-				stderr,
-				"WARN: Unable to infer repository string from {}\n"
-				"      Please add to {} manually",
-				archive_url_str,
-				metadata_config_path.generic_string()
-			);
+			metadata_json["versions"] = json::array({module_version});
 		}
+	} else {
+		auto metadata_config = bzlreg::metadata_config{};
+		metadata_config.versions.emplace_back(module_version);
+
+		if(!metadata_config.repository) {
+			metadata_config.repository.emplace();
+		}
+		if(metadata_config.repository->empty()) {
+			auto inferred_repository =
+				infer_repository_from_url(archive_url_result.url);
+			if(inferred_repository) {
+				metadata_config.repository->emplace_back(*inferred_repository);
+			} else {
+				std::println(
+					stderr,
+					"WARN: Unable to infer repository string from {}\n"
+					"      Please add to {} manually",
+					archive_url_str,
+					metadata_config_path.generic_string()
+				);
+			}
+		}
+		metadata_json = metadata_config;
 	}
 
-	if(metadata_config.maintainers.empty()) {
-		std::println( //
+	if(
+		!metadata_json.contains("maintainers") ||
+		!metadata_json["maintainers"].is_array() ||
+		metadata_json["maintainers"].empty()
+	) {
+		std::println(
 			stderr,
 			"WARN: 'maintainers' list is empty in {}",
 			metadata_config_path.generic_string()
 		);
 	}
 
-	if(metadata_config.homepage.empty()) {
-		std::println( //
+	if(
+		!metadata_json.contains("homepage") ||
+		!metadata_json["homepage"].is_string() ||
+		metadata_json["homepage"].get<std::string>().empty()
+	) {
+		std::println(
 			stderr,
 			"WARN: 'homepage' is empty in {}",
 			metadata_config_path.generic_string()
 		);
 	}
 
-	std::ofstream{metadata_config_path} << json{metadata_config}[0].dump(4);
-	std::ofstream{source_config_path} << json{source_config}[0].dump(4);
+	std::ofstream{metadata_config_path, std::ios::binary} << metadata_json.dump(4)
+																												<< "\n";
+	std::ofstream{source_config_path, std::ios::binary}
+		<< json{source_config}[0].dump(4) << "\n";
 	if(module_bzl_view) {
-		std::ofstream{module_bazel_path} << module_bzl_view.string_view();
+		std::ofstream{module_bazel_path, std::ios::binary}
+			<< module_bzl_view.string_view();
 	} else if(!archive_url_result.github.default_branch_commit.empty()) {
-		std::ofstream{module_bazel_path} << std::format(
+		std::ofstream{module_bazel_path, std::ios::binary} << std::format(
 			GIT_COMMIT_DEFALT_MODULE_BAZEL,
 			module_name,
 			archive_url_result.github.default_branch_commit,
 			module_version
 		);
 	} else {
-		std::ofstream{module_bazel_path}
+		std::ofstream{module_bazel_path, std::ios::binary}
 			<< std::format(DEFAULT_MODULE_BAZEL, module_name, module_version);
 	}
 
