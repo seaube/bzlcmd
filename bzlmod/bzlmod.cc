@@ -4,6 +4,7 @@
 #include "bzlmod/init_module.hh"
 #include "bzlmod/add_module.hh"
 #include "bzlmod/update_module.hh"
+#include "bzlmod/publish_module.hh"
 
 namespace fs = std::filesystem;
 using namespace docoptexpr::literals;
@@ -15,9 +16,11 @@ Usage:
 	bzlmod init [<module-dir>]
 	bzlmod add <dep-name>
 	bzlmod update
+	bzlmod publish [--dry-run]
 	bzlmod -h | --help
 
 Options:
+	--dry-run  Do everything except submit the pull request.
 	-h --help  Show this screen.
 )"_docopt;
 
@@ -54,6 +57,9 @@ auto main(int argc, char* argv[]) -> int {
 		exit_code = bzlmod::add_module(dep_name);
 	} else if(args.get<"update">()) {
 		exit_code = bzlmod::update_module();
+	} else if(args.get<"publish">()) {
+		auto dry_run = args.get<"--dry-run">();
+		exit_code = bzlmod::publish_module(dry_run);
 	}
 
 	return exit_code;

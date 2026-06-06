@@ -69,6 +69,26 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "publish_module",
+    srcs = ["publish_module.cc"],
+    hdrs = ["publish_module.hh"],
+    copts = copts,
+    deps = [
+        ":find_workspace_dir",
+        "//bzlreg:add_module",
+        "//bzlreg:decompress",
+        "//bzlreg:download",
+        "//bzlreg:gh_exec",
+        "//bzlreg:module_bazel",
+        "//bzlreg:tar_view",
+        "//bzlreg:util",
+        "@abseil-cpp//absl/strings",
+        "@boost.process",
+        "@nlohmann_json//:json",
+    ],
+)
+
 cc_binary(
     name = "bzlmod",
     srcs = ["bzlmod.cc"],
@@ -77,6 +97,7 @@ cc_binary(
     deps = [
         ":add_module",
         ":init_module",
+        ":publish_module",
         ":update_module",
         "@docoptexpr",
     ],
