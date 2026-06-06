@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.8 - 2026-06-06
+#### Features
+- new subcommand to publish to bcr (also fixed up some line generation on windows) (#127) - (d32b0fa) - Ezekiel Warren
+#### Miscellaneous Chores
+- **(deps)** update dependency llvm to v0.8.6 (#126) - (48ff299) - renovate[bot]
+- **(deps)** update jidicula/clang-format-action action to v4.18.0 (#118) - (b839b86) - renovate[bot]
+- **(deps)** update dependency with_cfg.bzl to v0.14.6 (#124) - (d52b814) - renovate[bot]
+- **(deps)** update actions/cache action to v5 (#121) - (732d530) - renovate[bot]
+- **(deps)** update github artifact actions (major) (#125) - (e2e2ed6) - renovate[bot]
+- **(deps)** update actions/checkout action to v6 (#122) - (1fed08f) - renovate[bot]
+
+- - -
+
 ## 0.2.7 - 2026-06-05
 #### Bug Fixes
 - properly handle tar extended header entries size - (56dd680) - Ezekiel Warren

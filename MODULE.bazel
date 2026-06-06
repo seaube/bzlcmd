@@ -1,6 +1,6 @@
 module(
     name = "bzlcmd",
-    version = "0.2.7",
+    version = "0.2.8",
 )
 
 bazel_dep(name = "llvm", version = "0.8.6", dev_dependency = True)
