@@ -358,7 +358,9 @@ auto bzlreg::add_module(add_module_options options) -> int {
 
 	if(fs::exists(metadata_config_path)) {
 		metadata_json = json::parse(std::ifstream{metadata_config_path});
-		if(metadata_json.contains("versions") && metadata_json["versions"].is_array()) {
+		if(
+			metadata_json.contains("versions") && metadata_json["versions"].is_array()
+		) {
 			for(const auto& version : metadata_json["versions"]) {
 				if(version.is_string() && version.get<std::string>() == module_version) {
 					std::println(
@@ -399,7 +401,11 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		metadata_json = metadata_config;
 	}
 
-	if(!metadata_json.contains("maintainers") || !metadata_json["maintainers"].is_array() || metadata_json["maintainers"].empty()) {
+	if(
+		!metadata_json.contains("maintainers") ||
+		!metadata_json["maintainers"].is_array() ||
+		metadata_json["maintainers"].empty()
+	) {
 		std::println(
 			stderr,
 			"WARN: 'maintainers' list is empty in {}",
@@ -407,7 +413,11 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		);
 	}
 
-	if(!metadata_json.contains("homepage") || !metadata_json["homepage"].is_string() || metadata_json["homepage"].get<std::string>().empty()) {
+	if(
+		!metadata_json.contains("homepage") ||
+		!metadata_json["homepage"].is_string() ||
+		metadata_json["homepage"].get<std::string>().empty()
+	) {
 		std::println(
 			stderr,
 			"WARN: 'homepage' is empty in {}",
@@ -415,10 +425,13 @@ auto bzlreg::add_module(add_module_options options) -> int {
 		);
 	}
 
-	std::ofstream{metadata_config_path, std::ios::binary} << metadata_json.dump(4) << "\n";
-	std::ofstream{source_config_path, std::ios::binary} << json{source_config}[0].dump(4) << "\n";
+	std::ofstream{metadata_config_path, std::ios::binary} << metadata_json.dump(4)
+																												<< "\n";
+	std::ofstream{source_config_path, std::ios::binary}
+		<< json{source_config}[0].dump(4) << "\n";
 	if(module_bzl_view) {
-		std::ofstream{module_bazel_path, std::ios::binary} << module_bzl_view.string_view();
+		std::ofstream{module_bazel_path, std::ios::binary}
+			<< module_bzl_view.string_view();
 	} else if(!archive_url_result.github.default_branch_commit.empty()) {
 		std::ofstream{module_bazel_path, std::ios::binary} << std::format(
 			GIT_COMMIT_DEFALT_MODULE_BAZEL,
