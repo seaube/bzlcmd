@@ -9,7 +9,7 @@ jobs:
     name: Formatting Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: jidicula/clang-format-action@v4.18.0
         with:
           clang-format-version: "22"
@@ -23,7 +23,7 @@ jobs:
         run: sudo curl -fL https://github.com/bazelbuild/buildtools/releases/download/v6.3.3/buildozer-linux-amd64 -o /usr/bin/buildozer && sudo chmod +x /usr/bin/buildozer
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Bazel
         uses: bazel-contrib/setup-bazel@0.19.0
@@ -58,7 +58,7 @@ jobs:
           echo "${{ github.workspace }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       
       - name: Download Windows Binaries
         uses: actions/download-artifact@v8
