@@ -5,6 +5,7 @@
 #include "bzlmod/add_module.hh"
 #include "bzlmod/update_module.hh"
 #include "bzlmod/publish_module.hh"
+#include "bzlmod/cc.hh"
 
 namespace fs = std::filesystem;
 using namespace docoptexpr::literals;
@@ -17,10 +18,12 @@ Usage:
 	bzlmod add <dep-name>
 	bzlmod update
 	bzlmod publish [--dry-run]
+	bzlmod cc include_deps [<file>] [--fix]
 	bzlmod -h | --help
 
 Options:
 	--dry-run  Do everything except submit the pull request.
+	--fix      Automatically add the missing dependencies.
 	-h --help  Show this screen.
 )"_docopt;
 
@@ -60,7 +63,12 @@ auto main(int argc, char* argv[]) -> int {
 	} else if(args.get<"publish">()) {
 		auto dry_run = args.get<"--dry-run">();
 		exit_code = bzlmod::publish_module(dry_run);
+	} else if(args.get<"cc">() && args.get<"include_deps">()) {
+		auto file = args.get<"<file>">();
+		auto fix = args.get<"--fix">();
+		exit_code = bzlmod::cc_include_deps(file, fix);
 	}
 
 	return exit_code;
 }
+
