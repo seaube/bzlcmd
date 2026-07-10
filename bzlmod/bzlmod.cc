@@ -19,6 +19,7 @@ Usage:
 	bzlmod update
 	bzlmod publish [--dry-run]
 	bzlmod cc include_deps [<file>] [--fix]
+	bzlmod cc list_headers
 	bzlmod -h | --help
 
 Options:
@@ -67,8 +68,9 @@ auto main(int argc, char* argv[]) -> int {
 		auto file = args.get<"<file>">();
 		auto fix = args.get<"--fix">();
 		exit_code = bzlmod::cc_include_deps(file, fix);
+	} else if(args.get<"cc">() && args.get<"list_headers">()) {
+		exit_code = bzlmod::cc_list_headers();
 	}
 
 	return exit_code;
 }
-
