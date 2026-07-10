@@ -8,5 +8,5 @@ auto cc_include_deps( //
 	bool fix
 ) -> int;
 
-auto cc_list_headers() -> int;
+auto cc_list_headers(std::string_view label, bool deps) -> int;
 }

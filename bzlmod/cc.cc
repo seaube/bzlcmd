@@ -605,16 +605,32 @@ auto bzlmod::cc_include_deps(std::string_view file_path, bool fix) -> int {
 	return 0;
 }
 
-auto bzlmod::cc_list_headers() -> int {
+auto bzlmod::cc_list_headers(std::string_view label, bool deps) -> int {
 	auto workspace_dir = find_workspace_dir(fs::current_path());
 	if(!workspace_dir) {
 		std::println(stderr, "[ERROR] Cannot find bazel workspace from {}.", fs::current_path().generic_string());
 		return 1;
 	}
 
+	std::string label_str{label};
+	bool include_deps = deps;
+	if (label_str.empty()) {
+		label_str = "//...";
+		if (!deps) {
+			include_deps = true;
+		}
+	}
+
+	std::string query_str;
+	if (include_deps) {
+		query_str = std::format("kind('cc_.*', deps({}))", label_str);
+	} else {
+		query_str = std::format("kind('cc_.*', {})", label_str);
+	}
+
 	include_to_target_map.clear();
 
-	auto query_res = run_bazel_query_keep_going("kind('cc_.*', deps(//...))");
+	auto query_res = run_bazel_query_keep_going(query_str);
 	if (query_res) {
 		parse_bazel_build_output(*query_res, *workspace_dir);
 	}

@@ -19,12 +19,13 @@ Usage:
 	bzlmod update
 	bzlmod publish [--dry-run]
 	bzlmod cc include_deps [<file>] [--fix]
-	bzlmod cc list_headers
+	bzlmod cc list_headers [<label>] [--deps]
 	bzlmod -h | --help
 
 Options:
 	--dry-run  Do everything except submit the pull request.
 	--fix      Automatically add the missing dependencies.
+	--deps     Include dependencies in the header listing.
 	-h --help  Show this screen.
 )"_docopt;
 
@@ -69,7 +70,9 @@ auto main(int argc, char* argv[]) -> int {
 		auto fix = args.get<"--fix">();
 		exit_code = bzlmod::cc_include_deps(file, fix);
 	} else if(args.get<"cc">() && args.get<"list_headers">()) {
-		exit_code = bzlmod::cc_list_headers();
+		auto label = args.get<"<label>">();
+		auto deps = args.get<"--deps">();
+		exit_code = bzlmod::cc_list_headers(label, deps);
 	}
 
 	return exit_code;
