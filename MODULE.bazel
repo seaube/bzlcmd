@@ -22,7 +22,7 @@ bazel_dep(name = "docoptexpr", version = "0.1.0")
 bazel_dep(name = "bzlws", version = "0.2.0")
 git_override(
     module_name = "bzlws",
-    commit = "831ef7001afeef7b8ea9ed741f6ec8cd2d4cfbc6",
+    commit = "cfb2f63ba8c69b5469e0563cb1ac879c2969f500",
     remote = "https://github.com/zaucy/bzlws.git",
 )
 
