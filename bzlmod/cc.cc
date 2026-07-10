@@ -165,6 +165,19 @@ static auto parse_location(const std::string& path_str, const fs::path& workspac
 static std::map<std::string, std::string> include_to_target_map;
 
 static void parse_bazel_build_output(const std::string& output, const fs::path& workspace_dir) {
+	struct RawRule {
+		std::string type;
+		std::string label;
+		std::string name;
+		std::vector<std::string> hdrs;
+		std::string strip_include_prefix;
+		std::string include_prefix;
+		std::vector<std::string> includes;
+		RuleLocation loc;
+	};
+
+	std::map<std::string, RawRule> raw_rules;
+
 	std::stringstream ss(output);
 	std::string line;
 	std::string current_location_comment = "";
@@ -196,6 +209,23 @@ static void parse_bazel_build_output(const std::string& output, const fs::path& 
 		return "";
 	};
 
+	auto resolve_label = [](const std::string& input_label, const RuleLocation& loc) -> std::string {
+		std::string s = input_label;
+		if (s.starts_with(":")) {
+			if (loc.repo.empty()) {
+				return std::format("//{}{}", loc.package.empty() ? "" : (loc.package + ":"), s.substr(1));
+			} else {
+				std::string apparent_repo = loc.repo;
+				auto plus = apparent_repo.find('+');
+				if (plus != std::string::npos) apparent_repo = apparent_repo.substr(0, plus);
+				auto tilde = apparent_repo.find('~');
+				if (tilde != std::string::npos) apparent_repo = apparent_repo.substr(0, tilde);
+				return std::format("@{}//{}:{}", apparent_repo, loc.package, s.substr(1));
+			}
+		}
+		return normalize_label(s);
+	};
+
 	auto process_current_rule = [&]() {
 		if (rule_name.empty()) return;
 		RuleLocation loc = parse_location(current_location_comment, workspace_dir);
@@ -212,65 +242,21 @@ static void parse_bazel_build_output(const std::string& output, const fs::path& 
 			rule_label = std::format("@{}//{}:{}", apparent_repo, loc.package, rule_name);
 		}
 
-		for (const auto& hdr_label : rule_hdrs) {
-			std::string hdr_path = "";
-			auto dbl_slash = hdr_label.find("//");
-			if (dbl_slash != std::string::npos) {
-				auto pkg_part = hdr_label.substr(dbl_slash + 2);
-				auto colon = pkg_part.find(':');
-				if (colon != std::string::npos) {
-					auto pkg = pkg_part.substr(0, colon);
-					auto file = pkg_part.substr(colon + 1);
-					if (pkg.empty()) {
-						hdr_path = file;
-					} else {
-						hdr_path = pkg + "/" + file;
-					}
-				}
-			}
-
-			if (hdr_path.empty()) continue;
-
-			auto dot = hdr_path.find_last_of('.');
-			if (dot == std::string::npos) continue;
-			auto ext = hdr_path.substr(dot);
-			for (auto& c : ext) c = std::tolower(c);
-			if (ext != ".h" && ext != ".hh" && ext != ".hpp" && ext != ".hxx" && 
-				ext != ".inc" && ext != ".inl" && ext != ".cc" && ext != ".cpp" && 
-				ext != ".cxx" && ext != ".c") {
-				continue;
-			}
-
-			std::string inc_path = hdr_path;
-
-			if (!strip_include_prefix.empty()) {
-				if (strip_include_prefix.starts_with("/")) {
-					auto prefix = strip_include_prefix.substr(1) + "/";
-					if (inc_path.starts_with(prefix)) {
-						inc_path = inc_path.substr(prefix.length());
-					}
-				} else {
-					auto prefix = loc.package.empty() ? (strip_include_prefix + "/") : (loc.package + "/" + strip_include_prefix + "/");
-					if (inc_path.starts_with(prefix)) {
-						inc_path = inc_path.substr(prefix.length());
-					}
-				}
-			}
-			
-			for (const auto& inc : rule_includes) {
-				auto prefix = loc.package.empty() ? (inc + "/") : (loc.package + "/" + inc + "/");
-				if (inc_path.starts_with(prefix)) {
-					inc_path = inc_path.substr(prefix.length());
-					break;
-				}
-			}
-
-			if (!include_prefix.empty()) {
-				inc_path = include_prefix + "/" + inc_path;
-			}
-
-			include_to_target_map[inc_path] = rule_label;
+		std::vector<std::string> resolved_hdrs;
+		for (const auto& h : rule_hdrs) {
+			resolved_hdrs.push_back(resolve_label(h, loc));
 		}
+
+		raw_rules[rule_label] = RawRule{
+			.type = rule_type,
+			.label = rule_label,
+			.name = rule_name,
+			.hdrs = resolved_hdrs,
+			.strip_include_prefix = strip_include_prefix,
+			.include_prefix = include_prefix,
+			.includes = rule_includes,
+			.loc = loc,
+		};
 	};
 
 	while (std::getline(ss, line)) {
@@ -338,6 +324,107 @@ static void parse_bazel_build_output(const std::string& output, const fs::path& 
 		}
 	}
 	process_current_rule(); // Catch last rule
+
+	// Pass 2: Transitive expansion & Mapping
+	std::map<std::string, std::vector<std::string>> resolved_files;
+	std::set<std::string> resolving;
+
+	auto get_target_files = [&](auto& self, const std::string& target) -> std::vector<std::string> {
+		auto it = resolved_files.find(target);
+		if (it != resolved_files.end()) {
+			return it->second;
+		}
+		if (resolving.contains(target)) {
+			return {};
+		}
+		resolving.insert(target);
+
+		std::vector<std::string> files;
+		auto rule_it = raw_rules.find(target);
+		if (rule_it != raw_rules.end()) {
+			const auto& rule = rule_it->second;
+			for (const auto& src : rule.hdrs) {
+				auto resolved = self(self, src);
+				files.insert(files.end(), resolved.begin(), resolved.end());
+			}
+		} else {
+			files.push_back(target);
+		}
+
+		resolving.erase(target);
+		resolved_files[target] = files;
+		return files;
+	};
+
+	for (const auto& [rule_label, rule] : raw_rules) {
+		if (rule.type == "filegroup") continue; // We only map cc_* target headers to their owning cc_* targets
+
+		std::vector<std::string> all_hdrs;
+		for (const auto& raw_hdr : rule.hdrs) {
+			auto resolved = get_target_files(get_target_files, raw_hdr);
+			all_hdrs.insert(all_hdrs.end(), resolved.begin(), resolved.end());
+		}
+
+		for (const auto& hdr_label : all_hdrs) {
+			std::string hdr_path = "";
+			auto dbl_slash = hdr_label.find("//");
+			if (dbl_slash != std::string::npos) {
+				auto pkg_part = hdr_label.substr(dbl_slash + 2);
+				auto colon = pkg_part.find(':');
+				if (colon != std::string::npos) {
+					auto pkg = pkg_part.substr(0, colon);
+					auto file = pkg_part.substr(colon + 1);
+					if (pkg.empty()) {
+						hdr_path = file;
+					} else {
+						hdr_path = pkg + "/" + file;
+					}
+				}
+			}
+
+			if (hdr_path.empty()) continue;
+
+			auto dot = hdr_path.find_last_of('.');
+			if (dot == std::string::npos) continue;
+			auto ext = hdr_path.substr(dot);
+			for (auto& c : ext) c = std::tolower(c);
+			if (ext != ".h" && ext != ".hh" && ext != ".hpp" && ext != ".hxx" && 
+				ext != ".inc" && ext != ".inl" && ext != ".cc" && ext != ".cpp" && 
+				ext != ".cxx" && ext != ".c") {
+				continue;
+			}
+
+			std::string inc_path = hdr_path;
+
+			if (!rule.strip_include_prefix.empty()) {
+				if (rule.strip_include_prefix.starts_with("/")) {
+					auto prefix = rule.strip_include_prefix.substr(1) + "/";
+					if (inc_path.starts_with(prefix)) {
+						inc_path = inc_path.substr(prefix.length());
+					}
+				} else {
+					auto prefix = rule.loc.package.empty() ? (rule.strip_include_prefix + "/") : (rule.loc.package + "/" + rule.strip_include_prefix + "/");
+					if (inc_path.starts_with(prefix)) {
+						inc_path = inc_path.substr(prefix.length());
+					}
+				}
+			}
+			
+			for (const auto& inc : rule.includes) {
+				auto prefix = rule.loc.package.empty() ? (inc + "/") : (rule.loc.package + "/" + inc + "/");
+				if (inc_path.starts_with(prefix)) {
+					inc_path = inc_path.substr(prefix.length());
+					break;
+				}
+			}
+
+			if (!rule.include_prefix.empty()) {
+				inc_path = rule.include_prefix + "/" + inc_path;
+			}
+
+			include_to_target_map[inc_path] = rule_label;
+		}
+	}
 }
 
 
@@ -434,7 +521,7 @@ auto bzlmod::cc_include_deps(std::string_view file_path, bool fix) -> int {
 		}
 	}
 
-	auto query_res = run_bazel_query_keep_going("kind('cc_.*', deps(//...))");
+	auto query_res = run_bazel_query_keep_going("kind('cc_.*', deps(//...)) union kind('filegroup', deps(//...))");
 	if (query_res) {
 		parse_bazel_build_output(*query_res, *workspace_dir);
 	}
@@ -633,9 +720,9 @@ auto bzlmod::cc_list_headers(std::string_view label, bool deps) -> int {
 
 	std::string query_str;
 	if (include_deps) {
-		query_str = std::format("kind('cc_.*', deps({}))", label_str);
+		query_str = std::format("kind('cc_.*', deps({})) union kind('filegroup', deps({}))", label_str, label_str);
 	} else {
-		query_str = std::format("kind('cc_.*', {})", label_str);
+		query_str = std::format("kind('cc_.*', {}) union kind('filegroup', {})", label_str, label_str);
 	}
 
 	include_to_target_map.clear();
