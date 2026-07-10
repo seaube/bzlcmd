@@ -231,6 +231,16 @@ static void parse_bazel_build_output(const std::string& output, const fs::path& 
 
 			if (hdr_path.empty()) continue;
 
+			auto dot = hdr_path.find_last_of('.');
+			if (dot == std::string::npos) continue;
+			auto ext = hdr_path.substr(dot);
+			for (auto& c : ext) c = std::tolower(c);
+			if (ext != ".h" && ext != ".hh" && ext != ".hpp" && ext != ".hxx" && 
+				ext != ".inc" && ext != ".inl" && ext != ".cc" && ext != ".cpp" && 
+				ext != ".cxx" && ext != ".c") {
+				continue;
+			}
+
 			std::string inc_path = hdr_path;
 
 			if (!strip_include_prefix.empty()) {
