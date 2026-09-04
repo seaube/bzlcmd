@@ -32,6 +32,56 @@ struct presubmit_config {
 	std::vector<std::string> test_targets;
 };
 
+static auto get_bazel_version(const fs::path& workspace_dir) -> std::string {
+	auto bazel_version_path = workspace_dir / ".bazelversion";
+	if(fs::exists(bazel_version_path)) {
+		try {
+			auto        ifs = std::ifstream{bazel_version_path};
+			std::string version;
+			if(std::getline(ifs, version)) {
+				auto trimmed = absl::StripAsciiWhitespace(version);
+				if(!trimmed.empty()) {
+					return std::string{trimmed};
+				}
+			}
+		} catch(...) {
+			// Ignore read errors and fall back
+		}
+	}
+
+	auto bazel_exe = bp::search_path("bazel");
+	if(!bazel_exe.empty()) {
+		try {
+			auto out = bp::ipstream{};
+			auto proc = bp::child{
+				bp::exe(bazel_exe),
+				bp::args({"--version"}),
+				bp::std_out > out,
+				bp::std_err > bp::null
+			};
+			std::string line;
+			if(std::getline(out, line)) {
+				auto parts = absl::StrSplit(line, ' ');
+				for(auto part : parts) {
+					auto trimmed = absl::StripAsciiWhitespace(part);
+					if(
+						!trimmed.empty() &&
+						std::isdigit(static_cast<unsigned char>(trimmed[0]))
+					) {
+						proc.wait();
+						return std::string{trimmed};
+					}
+				}
+			}
+			proc.wait();
+		} catch(...) {
+			// Ignore execution errors and fall back
+		}
+	}
+
+	return "9.x";
+}
+
 static auto parse_presubmit_yaml(const fs::path& path) -> presubmit_config {
 	auto config = presubmit_config{};
 	auto file = std::ifstream{path};
@@ -74,9 +124,25 @@ static auto parse_presubmit_yaml(const fs::path& path) -> presubmit_config {
 				target = target.substr(1, target.size() - 2);
 			}
 			if(in_build_targets) {
-				config.build_targets.push_back(std::string{target});
+				if(
+					std::find(
+						config.build_targets.begin(),
+						config.build_targets.end(),
+						target
+					) == config.build_targets.end()
+				) {
+					config.build_targets.push_back(std::string{target});
+				}
 			} else if(in_test_targets) {
-				config.test_targets.push_back(std::string{target});
+				if(
+					std::find(
+						config.test_targets.begin(),
+						config.test_targets.end(),
+						target
+					) == config.test_targets.end()
+				) {
+					config.test_targets.push_back(std::string{target});
+				}
 			}
 		}
 	}
@@ -628,19 +694,25 @@ auto bzlmod::publish_module(bool dry_run) -> int {
 				has_test_targets = has_valid_test;
 			}
 
+			auto bazel_ver = get_bazel_version(*workspace_dir);
 			auto default_presubmit =
 				std::ofstream{presubmit_dest_path, std::ios::binary};
 			default_presubmit << "matrix:\n"
 												<< "  platform:\n"
-												<< "    - ubuntu2004\n"
-												<< "tasks:\n"
-												<< "  ubuntu2004:\n"
-												<< "    platform: ubuntu2004\n"
-												<< "    build_targets:\n"
-												<< "      - \"//...\"\n";
-			if(has_test_targets) {
-				default_presubmit << "    test_targets:\n"
+												<< "    - ubuntu2204\n"
+												<< "    - macos\n"
+												<< "    - windows\n"
+												<< "tasks:\n";
+			for(const auto& plat : {"ubuntu2204", "macos", "windows"}) {
+				default_presubmit << "  " << plat << ":\n"
+													<< "    platform: " << plat << "\n"
+													<< "    bazel: " << bazel_ver << "\n"
+													<< "    build_targets:\n"
 													<< "      - \"//...\"\n";
+				if(has_test_targets) {
+					default_presubmit << "    test_targets:\n"
+														<< "      - \"//...\"\n";
+				}
 			}
 		}
 	}
