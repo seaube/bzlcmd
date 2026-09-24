@@ -89,6 +89,18 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "cc_cmd",
+    srcs = ["cc.cc"],
+    hdrs = ["cc.hh"],
+    copts = copts,
+    deps = [
+        ":find_workspace_dir",
+        "@boost.process",
+        "@nlohmann_json//:json",
+    ],
+)
+
 cc_binary(
     name = "bzlmod",
     srcs = ["bzlmod.cc"],
@@ -96,9 +108,11 @@ cc_binary(
     linkopts = linkopts,
     deps = [
         ":add_module",
+        ":cc_cmd",
         ":init_module",
         ":publish_module",
         ":update_module",
         "@docoptexpr",
     ],
 )
+
