@@ -57,8 +57,12 @@ static auto infer_repository_from_url( //
 	boost::url url
 ) -> std::optional<std::string> {
 	if(url.host_name() == "github.com") {
+		std::string_view path = url.path();
+		if(path.starts_with('/')) {
+			path.remove_prefix(1);
+		}
 		std::vector<std::string> path_parts =
-			absl::StrSplit(url.path(), absl::MaxSplits('/', 3));
+			absl::StrSplit(path, absl::MaxSplits('/', 2));
 		if(path_parts.size() >= 2) {
 			return std::format("github:{}/{}", path_parts[0], path_parts[1]);
 		}

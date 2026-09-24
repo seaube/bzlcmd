@@ -60,19 +60,48 @@ inline void from_json(const nlohmann::json& j, metadata_config& metadata) {
 struct source_config {
 	std::string                                  integrity;
 	std::string                                  strip_prefix;
-	int                                          patch_strip;
+	int                                          patch_strip = 0;
 	std::unordered_map<std::string, std::string> patches;
 	std::unordered_map<std::string, std::string> overlay;
 	std::string                                  url;
-
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT(
-		source_config,
-		integrity,
-		strip_prefix,
-		patch_strip,
-		patches,
-		overlay,
-		url
-	)
 };
+
+inline void to_json(nlohmann::json& j, const source_config& source) {
+	j = nlohmann::json{
+		{"integrity", source.integrity},
+		{"strip_prefix", source.strip_prefix},
+		{"url", source.url},
+	};
+	if(!source.patches.empty()) {
+		j["patches"] = source.patches;
+		j["patch_strip"] = source.patch_strip;
+	}
+	if(!source.overlay.empty()) {
+		j["overlay"] = source.overlay;
+	}
+}
+
+inline void from_json(const nlohmann::json& j, source_config& source) {
+	j.at("integrity").get_to(source.integrity);
+	j.at("strip_prefix").get_to(source.strip_prefix);
+	j.at("url").get_to(source.url);
+
+	if(j.contains("patches")) {
+		j.at("patches").get_to(source.patches);
+	} else {
+		source.patches.clear();
+	}
+
+	if(j.contains("patch_strip")) {
+		j.at("patch_strip").get_to(source.patch_strip);
+	} else {
+		source.patch_strip = 0;
+	}
+
+	if(j.contains("overlay")) {
+		j.at("overlay").get_to(source.overlay);
+	} else {
+		source.overlay.clear();
+	}
+}
 } // namespace bzlreg
