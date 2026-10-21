@@ -28,7 +28,7 @@ git_override(
 
 git_override(
     module_name = "docoptexpr",
-    commit = "2998cc8d58b10986f7d3123b6e0396e1775b682c",
+    commit = "a9f35670a14c4f61855e5c168d483819f6ac693c",
     remote = "https://github.com/zaucy/docoptexpr.git",
 )
 
